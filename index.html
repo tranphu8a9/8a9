@@ -1,0 +1,267 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>THỜI KHÓA BIỂU LỚP 8A9</title>
+  <style>
+    :root{--accent:#1f6feb;--muted:#666;--light-green:#d4edda;--light-pink:#ffd6db;--light-blue:#d6ecff}
+    body{font-family:Inter,system-ui,Segoe UI,Roboto,Arial;margin:16px;background:#f6f8fb;color:#0b1220}
+    header{padding:18px 0;text-align:center}
+    h1{margin:0;font-size:40px;color:darkblue}
+    .controls{display:flex;gap:8px;align-items:center;justify-content:center;margin-top:12px}
+    button{background:var(--accent);color:white;border:0;padding:8px 10px;border-radius:8px;cursor:pointer}
+    button.secondary{background:#fff;color:var(--accent);border:1px solid #d6e6ff}
+    .table-wrap{overflow:auto;background:white;padding:12px;border-radius:10px;box-shadow:0 2px 8px rgba(18,38,63,0.06);margin-top:14px}
+    table{border-collapse:collapse;width:100%;min-width:760px}
+    th,td{border:1px solid #e8eef8;padding:10px;text-align:center}
+    th.row-label, td.row-label{background:var(--light-green);font-weight:700;text-align:left;padding-left:14px}
+    th.thu2, td.thu2{background:var(--light-pink)}
+    th.thu3, td.thu3{background:var(--light-blue)}
+    th.thu4, td.thu4{background:var(--light-pink)}
+    th.thu5, td.thu5{background:var(--light-blue)}
+    th.thu6, td.thu6{background:var(--light-pink)}
+    th.thu7, td.thu7{background:var(--light-blue)}
+    tr.section-header td{background:#eef2f6;text-align:left;font-weight:700;padding-left:12px}
+    td.editable{cursor:pointer}
+    td.editable:focus{outline:2px solid #cde3ff}
+    .admin-panel{display:none;margin-top:12px;padding:12px;background:#ffffff;border-radius:10px;border:1px solid #e6eef9}
+    .admin-panel.show{display:block}
+    .field{display:flex;gap:8px;align-items:center;margin-bottom:8px}
+    .field label{width:140px;font-size:14px;color:#223}
+    .field input{flex:1;padding:8px;border:1px solid #dfeaf8;border-radius:6px}
+    .small{font-size:13px;color:var(--muted)}
+    .update-time{margin-top:10px;font-size:14px;font-style:italic;color:#334}
+    footer{margin-top:14px;color:var(--muted);font-size:13px;text-align:center}
+    @media (max-width:720px){th,td{padding:8px;font-size:12px}.row-label{display:none}}
+  </style>
+</head>
+<body>
+  <header>
+    <h1>THỜI KHÓA BIỂU LỚP 8A9</h1>
+    <div class="controls">
+      <button id="loginBtn">Đăng nhập</button>
+      <button class="secondary" id="saveLocal">Lưu cục bộ</button>
+      <button class="secondary" id="loadFromGithub">Tải từ GitHub</button>
+    </div>
+  </header>
+
+  <div class="table-wrap">
+    <table id="timetable">
+      <thead>
+        <tr>
+          <th class="row-label">Buổi / Tiết</th>
+          <th class="thu2">Thứ 2</th>
+          <th class="thu3">Thứ 3</th>
+          <th class="thu4">Thứ 4</th>
+          <th class="thu5">Thứ 5</th>
+          <th class="thu6">Thứ 6</th>
+          <th class="thu7">Thứ 7</th>
+        </tr>
+      </thead>
+      <tbody id="tbody"></tbody>
+    </table>
+  </div>
+
+  <div class="update-time" id="updateTime">Cập nhật lần cuối: —</div>
+
+  <div class="admin-panel" id="adminPanel">
+    <div style="display:flex;justify-content:space-between;align-items:center">
+      <strong>Quản trị</strong>
+      <button id="logoutBtn" style="background:#ef4444">Đăng xuất</button>
+    </div>
+    <div style="height:8px"></div>
+    <div class="field"><label>GitHub owner</label><input id="ghOwner" placeholder="tên người dùng hoặc tổ chức"/></div>
+    <div class="field"><label>Repo</label><input id="ghRepo" placeholder="tên repo (ví dụ: tkb)"/></div>
+    <div class="field"><label>File path</label><input id="ghPath" placeholder="đường dẫn file trong repo (ví dụ: data/tkb.json)"/></div>
+    <div class="field"><label>Personal Access Token</label><input id="ghToken" placeholder="PAT (ghi chú: giữ bí mật)"/></div>
+    <div class="field"><label></label>
+      <button id="saveToGithub">Lưu lên GitHub</button>
+      <button id="loadGithubFile" class="secondary">Tải file từ GitHub</button>
+    </div>
+    <div class="small">Lưu ý: để lưu lên GitHub, tạo PAT với scope <code>repo</code>. Việc nhập PAT vào trình duyệt có rủi ro — bảo mật token cẩn thận.</div>
+  </div>
+
+  <footer>
+    Phiên bản: GitHub sync • Dữ liệu được lưu lâu dài trên repo bạn chỉ định.
+  </footer>
+
+<script>
+// Data structure
+const DEFAULT = (()=>{const e=()=>Array(6).fill('');return {MORNING:[e(),e(),e(),e(),e()],AFTERNOON:[e(),e(),e(),e(),e()]}})();
+let data = JSON.parse(localStorage.getItem('tkb_8a9_data')) || DEFAULT;
+let lastSha = null; // used when updating file on GitHub
+let isAdmin = false;
+
+const tbody = document.getElementById('tbody');
+const updateTimeEl = document.getElementById('updateTime');
+
+function render(){
+  tbody.innerHTML = '';
+  for(let r=0;r<5;r++){
+    const tr=document.createElement('tr');
+    const tdLabel=document.createElement('td');
+    tdLabel.className='row-label';
+    tdLabel.textContent='Sáng - Tiết '+(r+1);
+    tr.appendChild(tdLabel);
+    for(let c=0;c<6;c++){
+      const td=document.createElement('td');
+      td.className='thu'+(c+2);
+      td.tabIndex=0;
+      td.dataset.session='MORNING';
+      td.dataset.r=r;
+      td.dataset.c=c;
+      td.textContent=data.MORNING[r][c]||'';
+      if(isAdmin){
+        td.classList.add('editable');
+        td.onclick=editCell;
+        td.onkeydown=cellKeyDown;
+      }else{td.onclick=null;td.onkeydown=null}
+      tr.appendChild(td);
+    }
+    tbody.appendChild(tr);
+  }
+
+  const sep=document.createElement('tr');
+  const sepTd=document.createElement('td');
+  sepTd.colSpan=7;sepTd.className='section-header';sepTd.textContent='';sep.appendChild(sepTd);tbody.appendChild(sep);
+
+  for(let r=0;r<5;r++){
+    const tr=document.createElement('tr');
+    const tdLabel=document.createElement('td');
+    tdLabel.className='row-label';
+    tdLabel.textContent='Chiều - Tiết '+(r+1);
+    tr.appendChild(tdLabel);
+    for(let c=0;c<6;c++){
+      const td=document.createElement('td');
+      td.className='thu'+(c+2);
+      td.tabIndex=0;
+      td.dataset.session='AFTERNOON';
+      td.dataset.r=r;
+      td.dataset.c=c;
+      td.textContent=data.AFTERNOON[r][c]||'';
+      if(isAdmin){
+        td.classList.add('editable');
+        td.onclick=editCell;
+        td.onkeydown=cellKeyDown;
+      }else{td.onclick=null;td.onkeydown=null}
+      tr.appendChild(td);
+    }
+    tbody.appendChild(tr);
+  }
+}
+
+function editCell(e){
+  const td = e.currentTarget;
+  const session = td.dataset.session;
+  const r = Number(td.dataset.r);
+  const c = Number(td.dataset.c);
+  const newVal = prompt('Nhập môn học cho ' + (session==='MORNING'?('Sáng - Tiết '+(r+1)):('Chiều - Tiết '+(r+1))) + ' - Thứ ' + (c+2), data[session][r][c]||'');
+  if(newVal===null) return;
+  data[session][r][c] = newVal.trim();
+  localSave();
+  render();
+}
+function cellKeyDown(e){ if(e.key==='Enter') editCell(e); }
+
+function localSave(){
+  localStorage.setItem('tkb_8a9_data', JSON.stringify(data));
+  const meta = {updated:new Date().toISOString()};
+  localStorage.setItem('tkb_8a9_meta', JSON.stringify(meta));
+  updateTimeEl.textContent = 'Cập nhật lần cuối: ' + new Date(meta.updated).toLocaleString();
+}
+
+// --- Login / Admin ---
+const loginBtn = document.getElementById('loginBtn');
+const adminPanel = document.getElementById('adminPanel');
+const logoutBtn = document.getElementById('logoutBtn');
+loginBtn.onclick = ()=>{
+  const user = prompt('Tên quản trị (mặc định: admin)'); if(user===null) return; const pass = prompt('Mật khẩu'); if(pass===null) return;
+  if(user==='admin' && pass==='1234'){ isAdmin=true; adminPanel.classList.add('show'); loginBtn.style.display='none'; render(); alert('Đăng nhập thành công'); } else alert('Tài khoản/mật khẩu không đúng');
+}
+logoutBtn.onclick = ()=>{ isAdmin=false; adminPanel.classList.remove('show'); loginBtn.style.display='inline-block'; render(); }
+
+// --- GitHub integration ---
+const ghOwnerEl = document.getElementById('ghOwner');
+const ghRepoEl = document.getElementById('ghRepo');
+const ghPathEl = document.getElementById('ghPath');
+const ghTokenEl = document.getElementById('ghToken');
+const saveToGithubBtn = document.getElementById('saveToGithub');
+const loadGithubFileBtn = document.getElementById('loadGithubFile');
+
+async function loadFromGithub(){
+  const owner = ghOwnerEl.value.trim(); const repo = ghRepoEl.value.trim(); const path = ghPathEl.value.trim();
+  if(!owner||!repo||!path){alert('Vui lòng điền owner, repo và path');return}
+  try{
+    const res = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/${path}`);
+    if(!res.ok){alert('Không tải được file từ GitHub: '+res.statusText);return}
+    const j = await res.json();
+    if(!j.content){alert('File không có nội dung');return}
+    // remove newline characters before base64 decode
+    const txt = atob(j.content.replace(/\n/g, ''));
+    const parsed = JSON.parse(txt);
+    data = parsed.data || parsed; // support wrapper
+    lastSha = j.sha;
+    localSave(); render();
+    if(parsed.updated){
+      updateTimeEl.textContent = 'Cập nhật lần cuối: ' + new Date(parsed.updated).toLocaleString();
+    } else {
+      updateTimeEl.textContent = 'Cập nhật lần cuối: ' + new Date().toLocaleString();
+    }
+    alert('Đã tải dữ liệu từ GitHub');
+  }catch(err){console.error(err);alert('Lỗi: '+(err.message||err))}
+}
+
+async function saveToGithub(){
+  const owner = ghOwnerEl.value.trim(); const repo = ghRepoEl.value.trim(); const path = ghPathEl.value.trim(); const token = ghTokenEl.value.trim();
+  if(!owner||!repo||!path||!token){alert('Vui lòng điền owner, repo, path và PAT');return}
+  try{
+    // prepare content: store object with data and metadata
+    const payload = {data: data, updated: new Date().toISOString()};
+    const content = btoa(unescape(encodeURIComponent(JSON.stringify(payload, null, 2))));
+
+    // check existing file to get sha (if exists)
+    const getRes = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/${path}`);
+    let sha = null;
+    if(getRes.ok){
+      const getJ = await getRes.json();
+      sha = getJ.sha;
+    }
+
+    const body = {message:'Update timetable', content};
+    if(sha) body.sha = sha;
+
+    const putRes = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/${path}`,{
+      method:'PUT',
+      headers:{'Authorization':'token '+token,'Content-Type':'application/json'},
+      body:JSON.stringify(body)
+    });
+    const putJ = await putRes.json();
+    if(putRes.ok){
+      lastSha = putJ.content.sha;
+      localSave();
+      updateTimeEl.textContent = 'Cập nhật lần cuối: ' + (new Date()).toLocaleString();
+      alert('Đã lưu lên GitHub thành công');
+    }else{
+      console.error(putJ); alert('Lưu thất bại: '+(putJ.message||putRes.statusText));
+    }
+  }catch(err){console.error(err);alert('Lỗi khi lưu: '+(err.message||err))}
+}
+
+// Buttons
+saveToGithubBtn.onclick = saveToGithub;
+loadGithubFileBtn.onclick = loadFromGithub;
+
+// quick actions
+document.getElementById('saveLocal').onclick = ()=>{ localSave(); alert('Đã lưu cục bộ') }
+document.getElementById('loadFromGithub').onclick = async ()=>{
+  const owner = prompt('GitHub owner (user hoặc org)'); if(!owner) return; const repo = prompt('Repo'); if(!repo) return; const path = prompt('Đường dẫn file (ví dụ: data/tkb.json)'); if(!path) return; ghOwnerEl.value=owner; ghRepoEl.value=repo; ghPathEl.value=path; await loadFromGithub(); }
+
+// initial render
+render();
+// show last update from localStorage if available
+const meta = JSON.parse(localStorage.getItem('tkb_8a9_meta')||'null'); if(meta && meta.updated) updateTimeEl.textContent='Cập nhật lần cuối: '+new Date(meta.updated).toLocaleString();
+
+</script>
+</body>
+</html>
