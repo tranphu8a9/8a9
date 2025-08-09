@@ -173,9 +173,14 @@ async function fetchFileSha() {
     const res = await fetch(`https://api.github.com/repos/${repoOwner}/${repoName}/contents/${filePath}?ref=${branch}`, {
       headers: { Authorization: `token ${githubToken}` }
     });
-    if (!res.ok) throw new Error("Không lấy được thông tin file SHA.");
+    if (!res.ok) {
+      const text = await res.text();
+      console.error("Lỗi lấy file SHA:", res.status, text);
+      throw new Error("Không lấy được thông tin file SHA.");
+    }
     const json = await res.json();
     fileSha = json.sha;
+    console.log("SHA file:", fileSha);
   } catch(e) {
     alert(e.message);
   }
