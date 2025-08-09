@@ -1,85 +1,261 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-<meta charset="UTF-8">
-<title>Thời Khóa Biểu</title>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Thời Khóa Biểu Lớp 8A9</title>
 <style>
-    body { font-family: Arial, sans-serif; padding: 20px; }
-    #loginSection, #mainSection { max-width: 600px; margin: auto; }
-    #mainSection { display: none; }
-    textarea { width: 100%; height: 300px; }
-    button { padding: 10px 20px; margin-top: 10px; }
+  body {
+    font-family: Arial, sans-serif; margin: 20px; background: #f9f9f9;
+    color: #222;
+  }
+  h1 {
+    text-align: center; color: #0645ad; font-size: 36px; margin-bottom: 30px;
+  }
+  #loginSection, #editSection {
+    max-width: 800px; margin: auto 10px; background: white; padding: 20px; border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+  }
+  #editSection {
+    display: none;
+  }
+  table {
+    width: 100%; border-collapse: collapse; margin-bottom: 20px;
+  }
+  th, td {
+    border: 1px solid #ccc; padding: 12px; text-align: center;
+  }
+  th {
+    background-color: #1f6feb33;
+    color: #0645ad;
+  }
+  .weekday-2, .weekday-4, .weekday-6 {
+    background-color: #ffc0cb70;
+  }
+  .weekday-3, .weekday-5, .weekday-7 {
+    background-color: #add8e670;
+  }
+  .period-header {
+    background-color: #90ee9070;
+    font-weight: bold;
+  }
+  textarea {
+    width: 100%; height: 300px; font-family: monospace; font-size: 14px;
+  }
+  input[type=password] {
+    padding: 8px; font-size: 16px; width: 200px; margin-right: 10px;
+  }
+  button {
+    padding: 8px 16px; font-size: 16px; cursor: pointer; background: #0645ad; color: white; border: none; border-radius: 4px;
+  }
+  button:hover {
+    background: #043e8a;
+  }
+  #status {
+    margin-top: 15px;
+    font-weight: bold;
+  }
+  #logoutBtn {
+    background: #cc0000; margin-left: 10px;
+  }
 </style>
 </head>
 <body>
 
-<div id="loginSection">
-    <h2>Đăng nhập để chỉnh sửa TKB</h2>
-    <input type="password" id="password" placeholder="Nhập mật khẩu"><br>
-    <button onclick="login()">Đăng nhập</button>
+<h1>THỜI KHÓA BIỂU LỚP 8A9</h1>
+
+<div id="viewSection">
+  <table id="timetable"></table>
+  <div style="max-width:800px; margin:auto; text-align:center;">
+    <button id="showLoginBtn">Đăng nhập để chỉnh sửa</button>
+  </div>
 </div>
 
-<div id="mainSection">
-    <h2>Thời Khóa Biểu</h2>
-    <textarea id="jsonData"></textarea><br>
-    <button onclick="saveData()">Lưu dữ liệu</button>
-    <p id="status"></p>
+<div id="loginSection" style="max-width:800px; margin:auto; margin-top:30px; display:none; text-align:center;">
+  <input type="password" id="passwordInput" placeholder="Nhập mật khẩu">
+  <button id="loginBtn">Đăng nhập</button>
+  <button id="cancelLoginBtn" style="background:#888; margin-left:10px;">Huỷ</button>
+  <div id="loginStatus" style="color:red; margin-top:10px;"></div>
+</div>
+
+<div id="editSection">
+  <textarea id="jsonEditor"></textarea><br>
+  <button id="saveBtn">Lưu</button>
+  <button id="logoutBtn">Đăng xuất</button>
+  <div id="status"></div>
 </div>
 
 <script>
-const GITHUB_TOKEN = "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";
-const REPO_OWNER = "ductrong49";
-const REPO_NAME = "8a9";
-const FILE_PATH = "tkb.json";
-const BRANCH = "main";
-const PASSWORD = "Ductrong123";
+const repoOwner = "ductrong49";
+const repoName = "8a9";
+const branch = "main";
+const filePath = "tkb.json";
+const githubToken = "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";
+const editPassword = "Ductrong123";
 
-function login() {
-    const pass = document.getElementById("password").value;
-    if (pass === PASSWORD) {
-        document.getElementById("loginSection").style.display = "none";
-        document.getElementById("mainSection").style.display = "block";
-        loadData();
-    } else {
-        alert("Sai mật khẩu!");
+let fileSha = null;
+let timetableData = null;
+
+const viewSection = document.getElementById("viewSection");
+const loginSection = document.getElementById("loginSection");
+const editSection = document.getElementById("editSection");
+const jsonEditor = document.getElementById("jsonEditor");
+const statusDiv = document.getElementById("status");
+const loginStatus = document.getElementById("loginStatus");
+const passwordInput = document.getElementById("passwordInput");
+
+const showLoginBtn = document.getElementById("showLoginBtn");
+const loginBtn = document.getElementById("loginBtn");
+const cancelLoginBtn = document.getElementById("cancelLoginBtn");
+const saveBtn = document.getElementById("saveBtn");
+const logoutBtn = document.getElementById("logoutBtn");
+
+function renderTimetable(data) {
+  const table = document.getElementById("timetable");
+  table.innerHTML = "";
+
+  const days = ["Thứ 2", "Thứ 3", "Thứ 4", "Thứ 5", "Thứ 6", "Thứ 7"];
+  // Header row
+  let thead = "<tr><th>Buổi / Tiết</th>";
+  for(let i=0; i<days.length; i++){
+    let cls = "";
+    if([0,2,4].includes(i)) cls = "weekday-2"; // Thứ 2,4,6
+    else cls = "weekday-3"; // Thứ 3,5,7
+    thead += `<th class="${cls}">${days[i]}</th>`;
+  }
+  thead += "</tr>";
+
+  // Buổi sáng 5 tiết
+  let tbody = "";
+  for(let r=0; r<5; r++){
+    tbody += `<tr><td class="period-header">Sáng - Tiết ${r+1}</td>`;
+    for(let c=0; c<6; c++){
+      let cls = "";
+      if([1,3,5].includes(c)) cls = "weekday-3";
+      else cls = "weekday-2";
+      const cell = (data.MORNING && data.MORNING[r] && data.MORNING[r][c]) || "";
+      tbody += `<td class="${cls}">${cell}</td>`;
     }
+    tbody += "</tr>";
+  }
+  // Separator row
+  tbody += `<tr><td colspan="7" style="background:#eee; height:15px;"></td></tr>`;
+  // Buổi chiều 5 tiết
+  for(let r=0; r<5; r++){
+    tbody += `<tr><td class="period-header">Chiều - Tiết ${r+1}</td>`;
+    for(let c=0; c<6; c++){
+      let cls = "";
+      if([1,3,5].includes(c)) cls = "weekday-3";
+      else cls = "weekday-2";
+      const cell = (data.AFTERNOON && data.AFTERNOON[r] && data.AFTERNOON[r][c]) || "";
+      tbody += `<td class="${cls}">${cell}</td>`;
+    }
+    tbody += "</tr>";
+  }
+
+  table.innerHTML = thead + tbody;
 }
 
-async function loadData() {
-    const url = `https://raw.githubusercontent.com/${REPO_OWNER}/${REPO_NAME}/${BRANCH}/${FILE_PATH}`;
-    const response = await fetch(url);
-    const text = await response.text();
-    document.getElementById("jsonData").value = text;
+async function fetchTimetable() {
+  try {
+    const res = await fetch(`https://raw.githubusercontent.com/${repoOwner}/${repoName}/${branch}/${filePath}`);
+    if (!res.ok) throw new Error("Không tải được dữ liệu thời khóa biểu.");
+    const data = await res.json();
+    timetableData = data;
+    renderTimetable(data);
+  } catch (e) {
+    alert(e.message);
+  }
 }
 
-async function saveData() {
-    const newContent = document.getElementById("jsonData").value;
-    const getUrl = `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${FILE_PATH}`;
-    
-    const getRes = await fetch(getUrl, { headers: { Authorization: `token ${GITHUB_TOKEN}` } });
-    const fileData = await getRes.json();
-    const sha = fileData.sha;
-
-    const putRes = await fetch(getUrl, {
-        method: "PUT",
-        headers: {
-            "Authorization": `token ${GITHUB_TOKEN}`,
-            "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-            message: "Cập nhật TKB",
-            content: btoa(unescape(encodeURIComponent(newContent))),
-            sha: sha,
-            branch: BRANCH
-        })
+async function fetchFileSha() {
+  try {
+    const res = await fetch(`https://api.github.com/repos/${repoOwner}/${repoName}/contents/${filePath}?ref=${branch}`, {
+      headers: { Authorization: `token ${githubToken}` }
     });
-
-    if (putRes.ok) {
-        document.getElementById("status").innerText = "Đã lưu thành công!";
-    } else {
-        document.getElementById("status").innerText = "Lỗi khi lưu dữ liệu!";
-    }
+    if (!res.ok) throw new Error("Không lấy được thông tin file SHA.");
+    const json = await res.json();
+    fileSha = json.sha;
+  } catch(e) {
+    alert(e.message);
+  }
 }
+
+showLoginBtn.onclick = () => {
+  loginSection.style.display = "block";
+  showLoginBtn.style.display = "none";
+};
+
+cancelLoginBtn.onclick = () => {
+  loginSection.style.display = "none";
+  showLoginBtn.style.display = "inline-block";
+  loginStatus.textContent = "";
+  passwordInput.value = "";
+};
+
+loginBtn.onclick = () => {
+  const pass = passwordInput.value;
+  if (pass === editPassword) {
+    loginSection.style.display = "none";
+    viewSection.style.display = "none";
+    editSection.style.display = "block";
+    loginStatus.textContent = "";
+    jsonEditor.value = JSON.stringify(timetableData, null, 2);
+    statusDiv.textContent = "";
+    fetchFileSha();
+  } else {
+    loginStatus.textContent = "Sai mật khẩu!";
+  }
+};
+
+logoutBtn.onclick = () => {
+  editSection.style.display = "none";
+  viewSection.style.display = "block";
+  showLoginBtn.style.display = "inline-block";
+  passwordInput.value = "";
+};
+
+saveBtn.onclick = async () => {
+  let newJson;
+  try {
+    newJson = JSON.parse(jsonEditor.value);
+  } catch {
+    statusDiv.style.color = "red";
+    statusDiv.textContent = "JSON không hợp lệ!";
+    return;
+  }
+  statusDiv.style.color = "black";
+  statusDiv.textContent = "Đang lưu...";
+  try {
+    const res = await fetch(`https://api.github.com/repos/${repoOwner}/${repoName}/contents/${filePath}`, {
+      method: "PUT",
+      headers: {
+        Authorization: `token ${githubToken}`,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        message: "Cập nhật thời khóa biểu từ web",
+        content: btoa(unescape(encodeURIComponent(JSON.stringify(newJson, null, 2)))),
+        sha: fileSha,
+        branch: branch
+      })
+    });
+    if (!res.ok) {
+      const errText = await res.text();
+      throw new Error(errText);
+    }
+    timetableData = newJson;
+    fileSha = (await res.json()).content.sha;
+    renderTimetable(newJson);
+    statusDiv.style.color = "green";
+    statusDiv.textContent = "Lưu thành công!";
+  } catch (e) {
+    statusDiv.style.color = "red";
+    statusDiv.textContent = "Lỗi khi lưu: " + e.message;
+  }
+};
+
+fetchTimetable();
 </script>
 
 </body>
