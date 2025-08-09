@@ -6,17 +6,16 @@
 <title>Thời Khóa Biểu Lớp 8A9</title>
 <style>
   body {
-    font-family: Arial, sans-serif; margin: 20px; background: #f9f9f9;
-    color: #222;
+    font-family: Arial, sans-serif; margin: 20px; background: #f9f9f9; color: #222;
   }
   h1 {
     text-align: center; color: #0645ad; font-size: 36px; margin-bottom: 30px;
   }
-  #loginSection, #editSection {
-    max-width: 800px; margin: auto 10px; background: white; padding: 20px; border-radius: 8px;
+  #viewSection, #editSection, #loginSection {
+    max-width: 900px; margin: auto; background: white; padding: 20px; border-radius: 8px;
     box-shadow: 0 0 10px rgba(0,0,0,0.1);
   }
-  #editSection {
+  #editSection, #loginSection {
     display: none;
   }
   table {
@@ -24,6 +23,7 @@
   }
   th, td {
     border: 1px solid #ccc; padding: 12px; text-align: center;
+    min-width: 60px;
   }
   th {
     background-color: #1f6feb33;
@@ -39,11 +39,14 @@
     background-color: #90ee9070;
     font-weight: bold;
   }
-  textarea {
-    width: 100%; height: 300px; font-family: monospace; font-size: 14px;
+  td.editable {
+    cursor: pointer;
+  }
+  td.editable:hover {
+    background: #e0f0ff;
   }
   input[type=password] {
-    padding: 8px; font-size: 16px; width: 200px; margin-right: 10px;
+    padding: 8px; font-size: 16px; width: 250px; margin-right: 10px;
   }
   button {
     padding: 8px 16px; font-size: 16px; cursor: pointer; background: #0645ad; color: white; border: none; border-radius: 4px;
@@ -52,11 +55,13 @@
     background: #043e8a;
   }
   #status {
-    margin-top: 15px;
-    font-weight: bold;
+    margin-top: 15px; font-weight: bold;
   }
   #logoutBtn {
     background: #cc0000; margin-left: 10px;
+  }
+  #separatorRow td {
+    background: #eee; height: 15px; border: none;
   }
 </style>
 </head>
@@ -66,22 +71,24 @@
 
 <div id="viewSection">
   <table id="timetable"></table>
-  <div style="max-width:800px; margin:auto; text-align:center;">
+  <div style="text-align:center;">
     <button id="showLoginBtn">Đăng nhập để chỉnh sửa</button>
   </div>
 </div>
 
-<div id="loginSection" style="max-width:800px; margin:auto; margin-top:30px; display:none; text-align:center;">
-  <input type="password" id="passwordInput" placeholder="Nhập mật khẩu">
+<div id="loginSection" style="text-align:center;">
+  <input type="password" id="passwordInput" placeholder="Nhập mật khẩu" />
   <button id="loginBtn">Đăng nhập</button>
   <button id="cancelLoginBtn" style="background:#888; margin-left:10px;">Huỷ</button>
   <div id="loginStatus" style="color:red; margin-top:10px;"></div>
 </div>
 
 <div id="editSection">
-  <textarea id="jsonEditor"></textarea><br>
-  <button id="saveBtn">Lưu</button>
-  <button id="logoutBtn">Đăng xuất</button>
+  <table id="editTable"></table>
+  <div style="text-align:center; margin-top:10px;">
+    <button id="saveBtn">Lưu</button>
+    <button id="logoutBtn">Đăng xuất</button>
+  </div>
   <div id="status"></div>
 </div>
 
@@ -95,11 +102,13 @@ const editPassword = "Ductrong123";
 
 let fileSha = null;
 let timetableData = null;
+let isAdmin = false;
 
 const viewSection = document.getElementById("viewSection");
 const loginSection = document.getElementById("loginSection");
 const editSection = document.getElementById("editSection");
-const jsonEditor = document.getElementById("jsonEditor");
+const timetable = document.getElementById("timetable");
+const editTable = document.getElementById("editTable");
 const statusDiv = document.getElementById("status");
 const loginStatus = document.getElementById("loginStatus");
 const passwordInput = document.getElementById("passwordInput");
@@ -110,50 +119,99 @@ const cancelLoginBtn = document.getElementById("cancelLoginBtn");
 const saveBtn = document.getElementById("saveBtn");
 const logoutBtn = document.getElementById("logoutBtn");
 
-function renderTimetable(data) {
-  const table = document.getElementById("timetable");
-  table.innerHTML = "";
+const days = ["Thứ 2", "Thứ 3", "Thứ 4", "Thứ 5", "Thứ 6", "Thứ 7"];
 
-  const days = ["Thứ 2", "Thứ 3", "Thứ 4", "Thứ 5", "Thứ 6", "Thứ 7"];
-  // Header row
+function renderViewTable(data) {
+  timetable.innerHTML = "";
+
+  // Header
   let thead = "<tr><th>Buổi / Tiết</th>";
-  for(let i=0; i<days.length; i++){
-    let cls = "";
-    if([0,2,4].includes(i)) cls = "weekday-2"; // Thứ 2,4,6
-    else cls = "weekday-3"; // Thứ 3,5,7
+  for (let i = 0; i < days.length; i++) {
+    let cls = ([0, 2, 4].includes(i)) ? "weekday-2" : "weekday-3";
     thead += `<th class="${cls}">${days[i]}</th>`;
   }
   thead += "</tr>";
 
-  // Buổi sáng 5 tiết
+  // Buổi sáng
   let tbody = "";
-  for(let r=0; r<5; r++){
-    tbody += `<tr><td class="period-header">Sáng - Tiết ${r+1}</td>`;
-    for(let c=0; c<6; c++){
-      let cls = "";
-      if([1,3,5].includes(c)) cls = "weekday-3";
-      else cls = "weekday-2";
+  for (let r = 0; r < 5; r++) {
+    tbody += `<tr><td class="period-header">Sáng - Tiết ${r + 1}</td>`;
+    for (let c = 0; c < 6; c++) {
+      let cls = ([1, 3, 5].includes(c)) ? "weekday-3" : "weekday-2";
       const cell = (data.MORNING && data.MORNING[r] && data.MORNING[r][c]) || "";
       tbody += `<td class="${cls}">${cell}</td>`;
     }
     tbody += "</tr>";
   }
+
   // Separator row
-  tbody += `<tr><td colspan="7" style="background:#eee; height:15px;"></td></tr>`;
-  // Buổi chiều 5 tiết
-  for(let r=0; r<5; r++){
-    tbody += `<tr><td class="period-header">Chiều - Tiết ${r+1}</td>`;
-    for(let c=0; c<6; c++){
-      let cls = "";
-      if([1,3,5].includes(c)) cls = "weekday-3";
-      else cls = "weekday-2";
+  tbody += `<tr id="separatorRow"><td colspan="7"></td></tr>`;
+
+  // Buổi chiều
+  for (let r = 0; r < 5; r++) {
+    tbody += `<tr><td class="period-header">Chiều - Tiết ${r + 1}</td>`;
+    for (let c = 0; c < 6; c++) {
+      let cls = ([1, 3, 5].includes(c)) ? "weekday-3" : "weekday-2";
       const cell = (data.AFTERNOON && data.AFTERNOON[r] && data.AFTERNOON[r][c]) || "";
       tbody += `<td class="${cls}">${cell}</td>`;
     }
     tbody += "</tr>";
   }
 
-  table.innerHTML = thead + tbody;
+  timetable.innerHTML = thead + tbody;
+}
+
+function renderEditTable(data) {
+  editTable.innerHTML = "";
+
+  // Header
+  let thead = "<tr><th>Buổi / Tiết</th>";
+  for (let i = 0; i < days.length; i++) {
+    let cls = ([0, 2, 4].includes(i)) ? "weekday-2" : "weekday-3";
+    thead += `<th class="${cls}">${days[i]}</th>`;
+  }
+  thead += "</tr>";
+
+  // Buổi sáng
+  let tbody = "";
+  for (let r = 0; r < 5; r++) {
+    tbody += `<tr><td class="period-header">Sáng - Tiết ${r + 1}</td>`;
+    for (let c = 0; c < 6; c++) {
+      let cls = ([1, 3, 5].includes(c)) ? "weekday-3" : "weekday-2";
+      const cell = (data.MORNING && data.MORNING[r] && data.MORNING[r][c]) || "";
+      tbody += `<td class="editable ${cls}" data-session="MORNING" data-r="${r}" data-c="${c}">${cell}</td>`;
+    }
+    tbody += "</tr>";
+  }
+
+  // Separator row
+  tbody += `<tr id="separatorRow"><td colspan="7"></td></tr>`;
+
+  // Buổi chiều
+  for (let r = 0; r < 5; r++) {
+    tbody += `<tr><td class="period-header">Chiều - Tiết ${r + 1}</td>`;
+    for (let c = 0; c < 6; c++) {
+      let cls = ([1, 3, 5].includes(c)) ? "weekday-3" : "weekday-2";
+      const cell = (data.AFTERNOON && data.AFTERNOON[r] && data.AFTERNOON[r][c]) || "";
+      tbody += `<td class="editable ${cls}" data-session="AFTERNOON" data-r="${r}" data-c="${c}">${cell}</td>`;
+    }
+    tbody += "</tr>";
+  }
+
+  editTable.innerHTML = thead + tbody;
+
+  // Add click event for editing cells
+  const editableCells = editTable.querySelectorAll("td.editable");
+  editableCells.forEach(td => {
+    td.addEventListener("click", () => {
+      if (!isAdmin) return;
+      const prev = td.textContent.trim();
+      const newVal = prompt(`Nhập môn học cho ${td.dataset.session === "MORNING" ? "Sáng" : "Chiều"} - Tiết ${parseInt(td.dataset.r) + 1} - Thứ ${parseInt(td.dataset.c) + 2}`, prev);
+      if (newVal !== null) {
+        td.textContent = newVal.trim();
+      }
+    });
+  });
 }
 
 async function fetchTimetable() {
@@ -162,7 +220,7 @@ async function fetchTimetable() {
     if (!res.ok) throw new Error("Không tải được dữ liệu thời khóa biểu.");
     const data = await res.json();
     timetableData = data;
-    renderTimetable(data);
+    renderViewTable(data);
   } catch (e) {
     alert(e.message);
   }
@@ -201,11 +259,13 @@ cancelLoginBtn.onclick = () => {
 loginBtn.onclick = () => {
   const pass = passwordInput.value;
   if (pass === editPassword) {
+    isAdmin = true;
     loginSection.style.display = "none";
     viewSection.style.display = "none";
     editSection.style.display = "block";
     loginStatus.textContent = "";
-    jsonEditor.value = JSON.stringify(timetableData, null, 2);
+    passwordInput.value = "";
+    renderEditTable(timetableData);
     statusDiv.textContent = "";
     fetchFileSha();
   } else {
@@ -214,23 +274,33 @@ loginBtn.onclick = () => {
 };
 
 logoutBtn.onclick = () => {
+  isAdmin = false;
   editSection.style.display = "none";
   viewSection.style.display = "block";
   showLoginBtn.style.display = "inline-block";
-  passwordInput.value = "";
+  statusDiv.textContent = "";
 };
 
 saveBtn.onclick = async () => {
-  let newJson;
+  // Cập nhật dữ liệu từ bảng editTable vào timetableData
   try {
-    newJson = JSON.parse(jsonEditor.value);
+    for (let r = 0; r < 5; r++) {
+      for (let c = 0; c < 6; c++) {
+        const morTd = editTable.querySelector(`td[data-session="MORNING"][data-r="${r}"][data-c="${c}"]`);
+        timetableData.MORNING[r][c] = morTd ? morTd.textContent.trim() : "";
+        const aftTd = editTable.querySelector(`td[data-session="AFTERNOON"][data-r="${r}"][data-c="${c}"]`);
+        timetableData.AFTERNOON[r][c] = aftTd ? aftTd.textContent.trim() : "";
+      }
+    }
   } catch {
     statusDiv.style.color = "red";
-    statusDiv.textContent = "JSON không hợp lệ!";
+    statusDiv.textContent = "Lỗi khi đọc dữ liệu từ bảng!";
     return;
   }
+
   statusDiv.style.color = "black";
   statusDiv.textContent = "Đang lưu...";
+
   try {
     const res = await fetch(`https://api.github.com/repos/${repoOwner}/${repoName}/contents/${filePath}`, {
       method: "PUT",
@@ -240,7 +310,7 @@ saveBtn.onclick = async () => {
       },
       body: JSON.stringify({
         message: "Cập nhật thời khóa biểu từ web",
-        content: btoa(unescape(encodeURIComponent(JSON.stringify(newJson, null, 2)))),
+        content: btoa(unescape(encodeURIComponent(JSON.stringify(timetableData, null, 2)))),
         sha: fileSha,
         branch: branch
       })
@@ -249,9 +319,9 @@ saveBtn.onclick = async () => {
       const errText = await res.text();
       throw new Error(errText);
     }
-    timetableData = newJson;
-    fileSha = (await res.json()).content.sha;
-    renderTimetable(newJson);
+    const resJson = await res.json();
+    fileSha = resJson.content.sha;
+    renderViewTable(timetableData);
     statusDiv.style.color = "green";
     statusDiv.textContent = "Lưu thành công!";
   } catch (e) {
