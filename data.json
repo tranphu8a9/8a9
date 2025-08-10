@@ -2,28 +2,28 @@
   "lastUpdated": "2025-08-10T09:00:00Z",
   "schedule": {
     "Monday": {
-      "morning": ["Toán", "Văn", "Anh", "Lý", "Hóa"],
-      "afternoon": ["Sinh", "Sử", "Địa", "GDCD", "Thể dục"]
+      "morning": ["Toán", "Văn", "Anh", "Sinh", "Lịch sử"],
+      "afternoon": ["Địa lý", "Thể dục", "Hóa", "Tin học", "GDCD"]
     },
     "Tuesday": {
-      "morning": ["Toán", "Văn", "Anh", "Lý", "Hóa"],
-      "afternoon": ["Sinh", "Sử", "Địa", "GDCD", "Thể dục"]
+      "morning": ["Văn", "Toán", "Anh", "Lý", "Sinh"],
+      "afternoon": ["Thể dục", "Hóa", "Lịch sử", "GDCD", "Tin học"]
     },
     "Wednesday": {
-      "morning": ["Toán", "Văn", "Anh", "Lý", "Hóa"],
-      "afternoon": ["Sinh", "Sử", "Địa", "GDCD", "Thể dục"]
+      "morning": ["Toán", "Văn", "Anh", "Sinh", "Địa lý"],
+      "afternoon": ["Thể dục", "Hóa", "Tin học", "Lịch sử", "GDCD"]
     },
     "Thursday": {
-      "morning": ["Toán", "Văn", "Anh", "Lý", "Hóa"],
-      "afternoon": ["Sinh", "Sử", "Địa", "GDCD", "Thể dục"]
+      "morning": ["Văn", "Toán", "Anh", "Lý", "Sinh"],
+      "afternoon": ["Thể dục", "Hóa", "Lịch sử", "GDCD", "Tin học"]
     },
     "Friday": {
-      "morning": ["Toán", "Văn", "Anh", "Lý", "Hóa"],
-      "afternoon": ["Sinh", "Sử", "Địa", "GDCD", "Thể dục"]
+      "morning": ["Toán", "Văn", "Anh", "Sinh", "Địa lý"],
+      "afternoon": ["Thể dục", "Hóa", "Tin học", "Lịch sử", "GDCD"]
     },
     "Saturday": {
-      "morning": ["Toán", "Văn", "Anh", "Lý", "Hóa"],
-      "afternoon": ["Sinh", "Sử", "Địa", "GDCD", "Thể dục"]
+      "morning": ["Toán", "Văn", "Anh", "Lý", "Sinh"],
+      "afternoon": ["Thể dục", "Hóa", "Lịch sử", "GDCD", "Tin học"]
     }
   }
 }
