@@ -4,65 +4,141 @@
 <meta charset="UTF-8" />
 <title>Thời khóa biểu Lớp 8A9</title>
 <style>
-  table { border-collapse: collapse; width: 100%; }
-  th, td { border: 1px solid #ccc; padding: 5px; text-align: center; }
-  th { background: #333; color: #fff; }
-  .morning { background: #d0f0f0; }
-  .afternoon { background: #f0d0a0; }
+  body {
+    font-family: Arial, sans-serif;
+    max-width: 900px;
+    margin: 20px auto;
+    padding: 0 10px;
+  }
+  h1 {
+    color: #1e3a8a; /* xanh dương */
+    text-align: center;
+    margin-bottom: 15px;
+  }
+  #lastUpdated {
+    text-align: center;
+    margin-bottom: 20px;
+    font-style: italic;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  th {
+    background-color: #1e40af; /* xanh dương đậm */
+    color: white;
+    padding: 8px;
+    text-align: center;
+  }
+  td {
+    border: 1px solid #ccc;
+    padding: 6px 8px;
+    text-align: center;
+  }
+
+  /* Màu nền khác nhau cho từng thứ */
+  /* Thứ 2 đến Thứ 7 */
+
+  /* Các cột thứ 2 đến 7 sẽ được đánh dấu bằng class */
+  .thu2 { background-color: #d0f0fd; }
+  .thu3 { background-color: #d0fde4; }
+  .thu4 { background-color: #fdf7d0; }
+  .thu5 { background-color: #fde0d0; }
+  .thu6 { background-color: #e9d0fd; }
+  .thu7 { background-color: #f0d0d0; }
+
+  /* Buổi sáng và chiều phân biệt */
+  .morning {
+    font-weight: bold;
+  }
+  .afternoon {
+    font-style: italic;
+  }
 </style>
 </head>
 <body>
+
 <h1>Thời khóa biểu Lớp 8A9</h1>
-<p id="lastUpdated"></p>
-<table id="scheduleTable">
+<div id="lastUpdated"></div>
+
+<table>
   <thead>
     <tr>
-      <th>Buổi / Thứ</th>
-      <th>Thứ 2</th>
-      <th>Thứ 3</th>
-      <th>Thứ 4</th>
-      <th>Thứ 5</th>
-      <th>Thứ 6</th>
-      <th>Thứ 7</th>
+      <th>Buổi / Tiết</th>
+      <th class="thu2">Thứ 2</th>
+      <th class="thu3">Thứ 3</th>
+      <th class="thu4">Thứ 4</th>
+      <th class="thu5">Thứ 5</th>
+      <th class="thu6">Thứ 6</th>
+      <th class="thu7">Thứ 7</th>
     </tr>
   </thead>
-  <tbody>
-    <tr>
-      <td>Sáng</td>
-      <td class="morning"></td>
-      <td class="morning"></td>
-      <td class="morning"></td>
-      <td class="morning"></td>
-      <td class="morning"></td>
-      <td class="morning"></td>
-    </tr>
-    <tr>
-      <td>Chiều</td>
-      <td class="afternoon"></td>
-      <td class="afternoon"></td>
-      <td class="afternoon"></td>
-      <td class="afternoon"></td>
-      <td class="afternoon"></td>
-      <td class="afternoon"></td>
-    </tr>
+  <tbody id="scheduleBody">
+    <!-- Dữ liệu sẽ được chèn ở đây -->
   </tbody>
 </table>
 
 <script>
 const dataUrl = "https://raw.githubusercontent.com/ductrong49/8a9/main/data.json";
 
+const days = ["Thứ 2", "Thứ 3", "Thứ 4", "Thứ 5", "Thứ 6", "Thứ 7"];
+const classes = ["thu2", "thu3", "thu4", "thu5", "thu6", "thu7"];
+
 fetch(dataUrl)
   .then(res => res.json())
   .then(data => {
     document.getElementById("lastUpdated").textContent =
       "Cập nhật lần cuối: " + new Date(data.lastUpdated).toLocaleString("vi-VN");
-    const days = ["Thứ 2", "Thứ 3", "Thứ 4", "Thứ 5", "Thứ 6", "Thứ 7"];
-    days.forEach((day, i) => {
-      document.querySelectorAll(".morning")[i].textContent = data.schedule[day].morning.join(", ");
-      document.querySelectorAll(".afternoon")[i].textContent = data.schedule[day].afternoon.join(", ");
-    });
+
+    const tbody = document.getElementById("scheduleBody");
+
+    // Mỗi buổi có 5 tiết
+    const morningPeriods = 5;
+    const afternoonPeriods = 5;
+
+    // Buổi sáng: 5 dòng
+    for(let i=0; i<morningPeriods; i++) {
+      const tr = document.createElement("tr");
+      const tdBuoiTiet = document.createElement("td");
+      tdBuoiTiet.textContent = `Sáng - Tiết ${i+1}`;
+      tdBuoiTiet.classList.add("morning");
+      tr.appendChild(tdBuoiTiet);
+
+      // Mỗi ngày trong tuần
+      for(let d=0; d<days.length; d++) {
+        const td = document.createElement("td");
+        td.classList.add(classes[d]);
+        // Lấy môn học tiết i trong buổi sáng
+        const mon = data.schedule[days[d]]?.morning?.[i] || "";
+        td.textContent = mon;
+        tr.appendChild(td);
+      }
+      tbody.appendChild(tr);
+    }
+
+    // Buổi chiều: 5 dòng
+    for(let i=0; i<afternoonPeriods; i++) {
+      const tr = document.createElement("tr");
+      const tdBuoiTiet = document.createElement("td");
+      tdBuoiTiet.textContent = `Chiều - Tiết ${i+1}`;
+      tdBuoiTiet.classList.add("afternoon");
+      tr.appendChild(tdBuoiTiet);
+
+      // Mỗi ngày trong tuần
+      for(let d=0; d<days.length; d++) {
+        const td = document.createElement("td");
+        td.classList.add(classes[d]);
+        // Lấy môn học tiết i trong buổi chiều
+        const mon = data.schedule[days[d]]?.afternoon?.[i] || "";
+        td.textContent = mon;
+        tr.appendChild(td);
+      }
+      tbody.appendChild(tr);
+    }
+
   })
   .catch(() => alert("Không tải được dữ liệu thời khóa biểu!"));
 </script>
+
 </body>
 </html>
