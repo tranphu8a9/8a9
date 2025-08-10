@@ -46,22 +46,31 @@
 
   /* Tiêu đề buổi học */
   .session-title {
-    background-color: #f0f0f0;
     font-weight: bold;
     text-align: left;
     font-size: 1.1em;
     border-top: 2px solid #ccc;
     border-bottom: 2px solid #ccc;
+    padding: 4px 8px;
   }
 
-  /* Khoảng cách giữa các tiết */
+  /* Loại bỏ khoảng cách dòng */
   .spacing-row td {
     border: none;
-    height: 10px;
+    height: 2px;
+    padding: 0;
+    margin: 0;
     background: transparent;
   }
 
-  /* Buổi sáng và chiều phân biệt */
+  /* Màu chữ buổi sáng và chiều */
+  .morning-title {
+    color: #1e3a8a; /* xanh dương */
+  }
+  .afternoon-title {
+    color: #8b4513; /* nâu */
+  }
+  /* Buổi sáng và chiều tên tiết */
   .morning {
     font-weight: bold;
   }
@@ -114,7 +123,7 @@ fetch(dataUrl)
     let tdSessionMorning = document.createElement("td");
     tdSessionMorning.colSpan = 7;
     tdSessionMorning.textContent = "Buổi Sáng";
-    tdSessionMorning.classList.add("session-title");
+    tdSessionMorning.classList.add("session-title", "morning-title");
     trSessionMorning.appendChild(tdSessionMorning);
     tbody.appendChild(trSessionMorning);
 
@@ -135,16 +144,8 @@ fetch(dataUrl)
       }
       tbody.appendChild(tr);
 
-      // Khoảng cách giữa các tiết
-      if(i < morningPeriods -1) {
-        let trSpace = document.createElement("tr");
-        trSpace.classList.add("spacing-row");
-        for(let k=0; k<=days.length; k++) {
-          let tdSpace = document.createElement("td");
-          trSpace.appendChild(tdSpace);
-        }
-        tbody.appendChild(trSpace);
-      }
+      // Bỏ khoảng cách dòng
+      // Nếu muốn thêm khoảng cách thì thêm tr như trước, giờ để sát nhau nên không thêm
     }
 
     // Dòng tiêu đề buổi chiều
@@ -152,7 +153,7 @@ fetch(dataUrl)
     let tdSessionAfternoon = document.createElement("td");
     tdSessionAfternoon.colSpan = 7;
     tdSessionAfternoon.textContent = "Buổi Chiều";
-    tdSessionAfternoon.classList.add("session-title");
+    tdSessionAfternoon.classList.add("session-title", "afternoon-title");
     trSessionAfternoon.appendChild(tdSessionAfternoon);
     tbody.appendChild(trSessionAfternoon);
 
@@ -172,16 +173,6 @@ fetch(dataUrl)
         tr.appendChild(td);
       }
       tbody.appendChild(tr);
-
-      if(i < afternoonPeriods -1) {
-        let trSpace = document.createElement("tr");
-        trSpace.classList.add("spacing-row");
-        for(let k=0; k<=days.length; k++) {
-          let tdSpace = document.createElement("td");
-          trSpace.appendChild(tdSpace);
-        }
-        tbody.appendChild(trSpace);
-      }
     }
 
   })
