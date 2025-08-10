@@ -3,15 +3,10 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Thời khóa biểu Lớp 8A9</title>
+<title>Thời khóa biểu Lớp 8A9 v1</title>
 <style>
-  body {
-    font-family: Arial, sans-serif;
-    padding: 10px;
-  }
-  h1 {
-    text-align: center;
-  }
+  body { font-family: Arial, sans-serif; padding: 10px; }
+  h1 { text-align: center; }
   #schedule {
     display: flex;
     justify-content: space-between;
@@ -30,9 +25,7 @@
     text-align: center;
     margin-bottom: 10px;
   }
-  .morning, .afternoon {
-    margin-bottom: 10px;
-  }
+  .morning, .afternoon { margin-bottom: 10px; }
   .period {
     border: 1px solid #aaa;
     padding: 5px;
@@ -61,20 +54,20 @@
   }
   input[type="password"], input[type="text"] {
     padding: 5px;
-    width: 220px;
+    width: 250px;
     margin: 5px 0;
   }
   button {
-    padding: 5px 15px;
+    padding: 6px 20px;
     cursor: pointer;
+    margin: 5px;
   }
-  #loginMsg {
-    color: red;
+  #loginMsg, #saveMsg {
     margin-top: 5px;
+    color: red;
   }
   #tokenInput {
-    width: 100%;
-    box-sizing: border-box;
+    display: none; /* Ẩn ô nhập token */
   }
 </style>
 </head>
@@ -90,7 +83,7 @@
   <h2>Admin chỉnh sửa</h2>
   <button id="saveBtn">Lưu thay đổi lên GitHub</button>
   <button id="logoutBtn">Đăng xuất</button>
-  <div id="saveMsg" style="margin-top:10px;"></div>
+  <div id="saveMsg"></div>
 </div>
 
 <div id="loginSection">
@@ -102,7 +95,7 @@
 </div>
 
 <script>
-  // Cấu hình repo GitHub của bạn
+  // Thông tin repo GitHub của bạn:
   const GITHUB_OWNER = "ductrong49";
   const GITHUB_REPO = "8A9";
   const FILE_PATH = "data.json";
@@ -111,13 +104,15 @@
   const API_BASE = `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${FILE_PATH}`;
   const RAW_BASE = `https://raw.githubusercontent.com/${GITHUB_OWNER}/${GITHUB_REPO}/${BRANCH}/${FILE_PATH}`;
 
+  const days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+  const dayClasses = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday"];
+
   let scheduleData = null;
   let fileSHA = null;
   let isAdmin = false;
-  let adminToken = "";
 
-  const days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
-  const dayClasses = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday"];
+  // Token đã chèn sẵn, không cần nhập
+  const adminToken = "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";
 
   const scheduleDiv = document.getElementById("schedule");
   const lastUpdatedDiv = document.getElementById("lastUpdated");
@@ -171,9 +166,7 @@
         p.dataset.session = "morning";
         p.dataset.index = idx;
         p.textContent = subject;
-        if (isAdmin) {
-          p.addEventListener("click", () => editSubject(p));
-        }
+        if (isAdmin) p.addEventListener("click", () => editSubject(p));
         morningDiv.appendChild(p);
       });
       dayDiv.appendChild(morningDiv);
@@ -190,9 +183,7 @@
         p.dataset.session = "afternoon";
         p.dataset.index = idx;
         p.textContent = subject;
-        if (isAdmin) {
-          p.addEventListener("click", () => editSubject(p));
-        }
+        if (isAdmin) p.addEventListener("click", () => editSubject(p));
         afternoonDiv.appendChild(p);
       });
       dayDiv.appendChild(afternoonDiv);
@@ -233,18 +224,11 @@
     });
 
     input.addEventListener("keydown", (e) => {
-      if (e.key === "Enter") {
-        input.blur();
-      }
+      if (e.key === "Enter") input.blur();
     });
   }
 
   async function saveToGitHub() {
-    if (!adminToken) {
-      saveMsg.style.color = "red";
-      saveMsg.textContent = "Bạn chưa nhập token GitHub!";
-      return;
-    }
     saveMsg.style.color = "black";
     saveMsg.textContent = "Đang lưu dữ liệu lên GitHub...";
     try {
@@ -281,40 +265,28 @@
 
   document.getElementById("loginBtn").addEventListener("click", () => {
     const pass = document.getElementById("adminPass").value;
-    const token = document.getElementById("tokenInput").value.trim();
 
-    if (pass === "admin123" && token) {
+    if (pass === "admin123") {
       isAdmin = true;
-      adminToken = token;
       loginSection.style.display = "none";
       adminSection.style.display = "block";
       loginMsg.textContent = "";
       saveMsg.textContent = "";
-      fetchFileSHA().then(sha => {
-        fileSHA = sha;
-      }).catch(() => {
-        fileSHA = null;
-      });
+      fetchFileSHA().then(sha => { fileSHA = sha; }).catch(() => { fileSHA = null; });
       renderSchedule();
     } else {
-      loginMsg.textContent = "Mật khẩu hoặc token sai hoặc chưa nhập!";
+      loginMsg.textContent = "Mật khẩu sai!";
     }
   });
 
   document.getElementById("logoutBtn").addEventListener("click", () => {
     isAdmin = false;
-    adminToken = "";
     loginSection.style.display = "block";
     adminSection.style.display = "none";
     saveMsg.textContent = "";
     renderSchedule();
   });
 
-  document.getElementById("saveBtn").addEventListener("click", () => {
-    saveToGitHub();
-  });
-
-  // Load dữ liệu lần đầu
   fetchSchedule();
 </script>
 
