@@ -2,181 +2,47 @@
 <html lang="vi">
 <head>
 <meta charset="UTF-8" />
-<title>THỜI KHÓA BIỂU LỚP 8A9</title>
+<title>Thời khóa biểu Lớp 8A9</title>
 <style>
-  body {
-    font-family: Arial, sans-serif;
-    max-width: 900px;
-    margin: 20px auto;
-    padding: 0 10px;
-  }
-  h1 {
-    color: #1e3a8a; /* xanh dương */
-    text-align: center;
-    margin-bottom: 15px;
-  }
-  #lastUpdated {
-    text-align: center;
-    margin-bottom: 20px;
-    font-style: italic;
-  }
-  table {
-    width: 100%;
-    border-collapse: collapse;
-  }
-  th {
-    background-color: #0b6623; /* xanh lá đậm */
-    color: green;
-    padding: 8px;
-    text-align: center;
-  }
-  td {
-    border: 1px solid #ccc;
-    padding: 6px 8px;
-    text-align: center;
-  }
-
-  /* Màu nền khác nhau cho từng thứ */
-  .thu2 { background-color: #d0f0fd; }
-  .thu3 { background-color: #d0fde4; }
-  .thu4 { background-color: #fdf7d0; }
-  .thu5 { background-color: #fde0d0; }
-  .thu6 { background-color: #e9d0fd; }
-  .thu7 { background-color: #f0d0d0; }
-
-  /* Tiêu đề buổi học */
-  .session-title {
-    font-weight: bold;
-    text-align: left;
-    font-size: 1.1em;
-    border-top: 2px solid #ccc;
-    border-bottom: 2px solid #ccc;
-    padding: 4px 8px;
-  }
-
-  /* Loại bỏ khoảng cách dòng */
-  .spacing-row td {
-    border: none;
-    height: 2px;
-    padding: 0;
-    margin: 0;
-    background: transparent;
-  }
-
-  /* Màu chữ buổi sáng và chiều */
-  .morning-title {
-    color: #1e3a8a; /* xanh dương */
-  }
-  .afternoon-title {
-    color: #8b4513; /* nâu */
-  }
-  /* Buổi sáng và chiều tên tiết */
-  .morning {
-    font-weight: bold;
-  }
-  .afternoon {
-    font-style: bold;
-  }
+  /* ... giữ nguyên phần style cũ ... */
 </style>
 </head>
 <body>
 
 <h1>Thời khóa biểu Lớp 8A9</h1>
+
+<!-- Chỗ hiển thị tuần học hoặc đếm ngược -->
+<div id="weekInfo" style="text-align:center; font-weight:bold; margin-bottom: 10px; font-size:1.1em; color:#1e3a8a;"></div>
+
 <div id="lastUpdated"></div>
 
-<table>
-  <thead>
-    <tr>
-      <th>Buổi / Tiết</th>
-      <th class="thu2">Thứ 2</th>
-      <th class="thu3">Thứ 3</th>
-      <th class="thu4">Thứ 4</th>
-      <th class="thu5">Thứ 5</th>
-      <th class="thu6">Thứ 6</th>
-      <th class="thu7">Thứ 7</th>
-    </tr>
-  </thead>
-  <tbody id="scheduleBody">
-    <!-- Dữ liệu sẽ được chèn ở đây -->
-  </tbody>
-</table>
+<!-- Bảng thời khóa biểu ... giữ nguyên như trước -->
 
 <script>
-const dataUrl = "https://raw.githubusercontent.com/ductrong49/8a9/main/data.json";
+// Hàm tính tuần hoặc đếm ngày
+function updateWeekInfo() {
+  const startDate = new Date("2025-09-08T00:00:00"); // Ngày bắt đầu tuần 1
+  const now = new Date();
 
-const days = ["Thứ 2", "Thứ 3", "Thứ 4", "Thứ 5", "Thứ 6", "Thứ 7"];
-const classes = ["thu2", "thu3", "thu4", "thu5", "thu6", "thu7"];
+  const diffMs = now - startDate; // hiệu số millisec
 
-fetch(dataUrl)
-  .then(res => res.json())
-  .then(data => {
-    document.getElementById("lastUpdated").textContent =
-      "Cập nhật lần cuối: " + new Date(data.lastUpdated).toLocaleString("vi-VN");
+  const weekInfoDiv = document.getElementById("weekInfo");
 
-    const tbody = document.getElementById("scheduleBody");
+  if(diffMs < 0) {
+    // Chưa đến ngày bắt đầu, đếm ngược ngày
+    const diffDays = Math.ceil(Math.abs(diffMs) / (1000 * 60 * 60 * 24));
+    weekInfoDiv.textContent = `Còn ${diffDays} ngày đến tuần học bắt đầu (08/09/2025)`;
+  } else {
+    // Đã đến hoặc qua ngày bắt đầu, tính số tuần (tính từ 1)
+    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+    const weekNumber = Math.floor(diffDays / 7) + 1;
+    weekInfoDiv.textContent = `Tuần học hiện tại: Tuần ${weekNumber}`;
+  }
+}
 
-    const morningPeriods = 5;
-    const afternoonPeriods = 5;
+updateWeekInfo();
 
-    // Dòng tiêu đề buổi sáng
-    let trSessionMorning = document.createElement("tr");
-    let tdSessionMorning = document.createElement("td");
-    tdSessionMorning.colSpan = 7;
-    tdSessionMorning.textContent = "Buổi Sáng";
-    tdSessionMorning.classList.add("session-title", "morning-title");
-    trSessionMorning.appendChild(tdSessionMorning);
-    tbody.appendChild(trSessionMorning);
-
-    // Các tiết buổi sáng
-    for(let i=0; i<morningPeriods; i++) {
-      const tr = document.createElement("tr");
-      const tdBuoiTiet = document.createElement("td");
-      tdBuoiTiet.textContent = `Tiết ${i+1}`;
-      tdBuoiTiet.classList.add("morning");
-      tr.appendChild(tdBuoiTiet);
-
-      for(let d=0; d<days.length; d++) {
-        const td = document.createElement("td");
-        td.classList.add(classes[d]);
-        const mon = data.schedule[days[d]]?.morning?.[i] || "";
-        td.textContent = mon;
-        tr.appendChild(td);
-      }
-      tbody.appendChild(tr);
-
-      // Bỏ khoảng cách dòng
-      // Nếu muốn thêm khoảng cách thì thêm tr như trước, giờ để sát nhau nên không thêm
-    }
-
-    // Dòng tiêu đề buổi chiều
-    let trSessionAfternoon = document.createElement("tr");
-    let tdSessionAfternoon = document.createElement("td");
-    tdSessionAfternoon.colSpan = 7;
-    tdSessionAfternoon.textContent = "Buổi Chiều";
-    tdSessionAfternoon.classList.add("session-title", "afternoon-title");
-    trSessionAfternoon.appendChild(tdSessionAfternoon);
-    tbody.appendChild(trSessionAfternoon);
-
-    // Các tiết buổi chiều
-    for(let i=0; i<afternoonPeriods; i++) {
-      const tr = document.createElement("tr");
-      const tdBuoiTiet = document.createElement("td");
-      tdBuoiTiet.textContent = `Tiết ${i+1}`;
-      tdBuoiTiet.classList.add("afternoon");
-      tr.appendChild(tdBuoiTiet);
-
-      for(let d=0; d<days.length; d++) {
-        const td = document.createElement("td");
-        td.classList.add(classes[d]);
-        const mon = data.schedule[days[d]]?.afternoon?.[i] || "";
-        td.textContent = mon;
-        tr.appendChild(td);
-      }
-      tbody.appendChild(tr);
-    }
-
-  })
-  .catch(() => alert("Không tải được dữ liệu thời khóa biểu!"));
+// ... phần fetch dữ liệu thời khóa biểu như trước ...
 </script>
 
 </body>
