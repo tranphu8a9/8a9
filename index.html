@@ -25,7 +25,7 @@
     border-collapse: collapse;
   }
   th {
-    background-color: #1e40af; /* xanh dương đậm */
+    background-color: #0b6623; /* xanh lá đậm */
     color: white;
     padding: 8px;
     text-align: center;
@@ -37,15 +37,29 @@
   }
 
   /* Màu nền khác nhau cho từng thứ */
-  /* Thứ 2 đến Thứ 7 */
-
-  /* Các cột thứ 2 đến 7 sẽ được đánh dấu bằng class */
   .thu2 { background-color: #d0f0fd; }
   .thu3 { background-color: #d0fde4; }
   .thu4 { background-color: #fdf7d0; }
   .thu5 { background-color: #fde0d0; }
   .thu6 { background-color: #e9d0fd; }
   .thu7 { background-color: #f0d0d0; }
+
+  /* Tiêu đề buổi học */
+  .session-title {
+    background-color: #f0f0f0;
+    font-weight: bold;
+    text-align: left;
+    font-size: 1.1em;
+    border-top: 2px solid #ccc;
+    border-bottom: 2px solid #ccc;
+  }
+
+  /* Khoảng cách giữa các tiết */
+  .spacing-row td {
+    border: none;
+    height: 10px;
+    background: transparent;
+  }
 
   /* Buổi sáng và chiều phân biệt */
   .morning {
@@ -92,48 +106,82 @@ fetch(dataUrl)
 
     const tbody = document.getElementById("scheduleBody");
 
-    // Mỗi buổi có 5 tiết
     const morningPeriods = 5;
     const afternoonPeriods = 5;
 
-    // Buổi sáng: 5 dòng
+    // Dòng tiêu đề buổi sáng
+    let trSessionMorning = document.createElement("tr");
+    let tdSessionMorning = document.createElement("td");
+    tdSessionMorning.colSpan = 7;
+    tdSessionMorning.textContent = "Buổi Sáng";
+    tdSessionMorning.classList.add("session-title");
+    trSessionMorning.appendChild(tdSessionMorning);
+    tbody.appendChild(trSessionMorning);
+
+    // Các tiết buổi sáng
     for(let i=0; i<morningPeriods; i++) {
       const tr = document.createElement("tr");
       const tdBuoiTiet = document.createElement("td");
-      tdBuoiTiet.textContent = `Sáng - Tiết ${i+1}`;
+      tdBuoiTiet.textContent = `Tiết ${i+1}`;
       tdBuoiTiet.classList.add("morning");
       tr.appendChild(tdBuoiTiet);
 
-      // Mỗi ngày trong tuần
       for(let d=0; d<days.length; d++) {
         const td = document.createElement("td");
         td.classList.add(classes[d]);
-        // Lấy môn học tiết i trong buổi sáng
         const mon = data.schedule[days[d]]?.morning?.[i] || "";
         td.textContent = mon;
         tr.appendChild(td);
       }
       tbody.appendChild(tr);
+
+      // Khoảng cách giữa các tiết
+      if(i < morningPeriods -1) {
+        let trSpace = document.createElement("tr");
+        trSpace.classList.add("spacing-row");
+        for(let k=0; k<=days.length; k++) {
+          let tdSpace = document.createElement("td");
+          trSpace.appendChild(tdSpace);
+        }
+        tbody.appendChild(trSpace);
+      }
     }
 
-    // Buổi chiều: 5 dòng
+    // Dòng tiêu đề buổi chiều
+    let trSessionAfternoon = document.createElement("tr");
+    let tdSessionAfternoon = document.createElement("td");
+    tdSessionAfternoon.colSpan = 7;
+    tdSessionAfternoon.textContent = "Buổi Chiều";
+    tdSessionAfternoon.classList.add("session-title");
+    trSessionAfternoon.appendChild(tdSessionAfternoon);
+    tbody.appendChild(trSessionAfternoon);
+
+    // Các tiết buổi chiều
     for(let i=0; i<afternoonPeriods; i++) {
       const tr = document.createElement("tr");
       const tdBuoiTiet = document.createElement("td");
-      tdBuoiTiet.textContent = `Chiều - Tiết ${i+1}`;
+      tdBuoiTiet.textContent = `Tiết ${i+1}`;
       tdBuoiTiet.classList.add("afternoon");
       tr.appendChild(tdBuoiTiet);
 
-      // Mỗi ngày trong tuần
       for(let d=0; d<days.length; d++) {
         const td = document.createElement("td");
         td.classList.add(classes[d]);
-        // Lấy môn học tiết i trong buổi chiều
         const mon = data.schedule[days[d]]?.afternoon?.[i] || "";
         td.textContent = mon;
         tr.appendChild(td);
       }
       tbody.appendChild(tr);
+
+      if(i < afternoonPeriods -1) {
+        let trSpace = document.createElement("tr");
+        trSpace.classList.add("spacing-row");
+        for(let k=0; k<=days.length; k++) {
+          let tdSpace = document.createElement("td");
+          trSpace.appendChild(tdSpace);
+        }
+        tbody.appendChild(trSpace);
+      }
     }
 
   })
