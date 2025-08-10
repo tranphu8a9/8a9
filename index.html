@@ -3,11 +3,10 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Thời khóa biểu Lớp 8A9 v1</title>
+<title>Thời khóa biểu Lớp 8A9</title>
 <style>
   body { font-family: Arial, sans-serif; padding: 10px; }
   h1 { text-align: center; }
-
   #schedule {
     display: grid;
     grid-template-columns: repeat(6, 1fr);
@@ -15,7 +14,6 @@
     margin-top: 20px;
     overflow-x: auto;
   }
-
   .dayColumn {
     border: 1px solid #ccc;
     border-radius: 5px;
@@ -24,7 +22,6 @@
     flex-direction: column;
     min-width: 120px;
   }
-
   .dayHeader {
     font-weight: bold;
     text-align: center;
@@ -34,12 +31,10 @@
     padding: 5px 0;
     border-radius: 5px 5px 0 0;
   }
-
   .morning, .afternoon {
     margin-bottom: 10px;
     flex-grow: 1;
   }
-
   .sessionTitle {
     font-weight: bold;
     margin-bottom: 5px;
@@ -48,7 +43,6 @@
     font-size: 0.9em;
     color: #555;
   }
-
   .period {
     border: 1px solid #aaa;
     padding: 5px;
@@ -59,7 +53,6 @@
     font-size: 0.9em;
     text-align: center;
   }
-
   .period.editable {
     cursor: pointer;
     background-color: #e6f0ff;
@@ -68,22 +61,18 @@
   .period.editable:hover {
     background-color: #cce0ff;
   }
-
-  /* Màu nền từng ngày cho dễ phân biệt */
   .thu2 { background-color: #f9c2c2; }
   .thu3 { background-color: #c2f9c2; }
   .thu4 { background-color: #c2d9f9; }
   .thu5 { background-color: #f9f4c2; }
   .thu6 { background-color: #f9c2e6; }
   .thu7 { background-color: #c2f4f9; }
-
   #lastUpdated {
     margin-top: 10px;
     font-style: italic;
     text-align: center;
     color: #555;
   }
-
   #loginSection, #adminSection {
     margin-top: 20px;
     text-align: center;
@@ -135,7 +124,6 @@
   const API_BASE = `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${FILE_PATH}`;
   const RAW_BASE = `https://raw.githubusercontent.com/${GITHUB_OWNER}/${GITHUB_REPO}/${BRANCH}/${FILE_PATH}`;
 
-  // Tiêu đề tiếng Việt thứ ngày
   const days = ["Thứ 2", "Thứ 3", "Thứ 4", "Thứ 5", "Thứ 6", "Thứ 7"];
   const dayKeys = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
   const dayClasses = ["thu2", "thu3", "thu4", "thu5", "thu6", "thu7"];
@@ -144,7 +132,8 @@
   let fileSHA = null;
   let isAdmin = false;
 
-  const adminToken = "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";
+  // Nhớ thay token nếu đổi token mới
+  const adminToken = "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";
 
   const scheduleDiv = document.getElementById("schedule");
   const lastUpdatedDiv = document.getElementById("lastUpdated");
@@ -163,6 +152,7 @@
       renderSchedule();
     } catch (e) {
       scheduleDiv.textContent = "Lỗi tải dữ liệu: " + e.message;
+      console.error(e);
     }
   }
 
@@ -171,8 +161,13 @@
       const res = await fetch(API_BASE + `?ref=${BRANCH}`, {
         headers: { Authorization: `token ${adminToken}` }
       });
-      if (!res.ok) throw new Error("Không lấy được SHA file data.json");
+      if (!res.ok) {
+        const err = await res.json();
+        console.error("Lỗi lấy SHA chi tiết:", err);
+        throw new Error("Không lấy được SHA file data.json");
+      }
       const data = await res.json();
+      console.log("SHA lấy được:", data.sha);
       return data.sha;
     } catch (e) {
       console.error("Lỗi lấy SHA:", e);
@@ -192,7 +187,6 @@
       header.textContent = dayName;
       dayDiv.appendChild(header);
 
-      // Buổi sáng
       const morningDiv = document.createElement("div");
       morningDiv.classList.add("morning");
       const mornTitle = document.createElement("div");
@@ -213,7 +207,6 @@
       });
       dayDiv.appendChild(morningDiv);
 
-      // Buổi chiều
       const afternoonDiv = document.createElement("div");
       afternoonDiv.classList.add("afternoon");
       const aftTitle = document.createElement("div");
