@@ -3,384 +3,319 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>THỜI KHÓA BIỂU LỚP 8A9</title>
+<title>Thời khóa biểu Lớp 8A9</title>
 <style>
   body {
     font-family: Arial, sans-serif;
-    background: #f0f4ff;
-    margin: 0; padding: 0;
-    color: #123b7a;
+    padding: 10px;
   }
-  header {
-    background: #c7d8ff;
-    padding: 20px;
+  h1 {
     text-align: center;
   }
-  header h1 {
-    margin: 0;
-    font-size: 40px;
-    color: #0f3c91;
+  #schedule {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 20px;
+    overflow-x: auto;
   }
-  #status {
-    margin: 10px auto;
-    max-width: 900px;
-    text-align: center;
+  .dayColumn {
+    border: 1px solid #ccc;
+    padding: 5px;
+    min-width: 120px;
+    margin-right: 10px;
+    border-radius: 5px;
+  }
+  .dayHeader {
     font-weight: bold;
-  }
-  #updateDate {
-    margin: 10px auto;
-    max-width: 900px;
     text-align: center;
+    margin-bottom: 10px;
+  }
+  .morning, .afternoon {
+    margin-bottom: 10px;
+  }
+  .period {
+    border: 1px solid #aaa;
+    padding: 5px;
+    margin: 3px 0;
+    cursor: default;
+  }
+  .period.editable {
+    cursor: pointer;
+    background-color: #eef;
+  }
+  .monday { background-color: #f9c2c2; }
+  .tuesday { background-color: #c2f9c2; }
+  .wednesday { background-color: #c2d9f9; }
+  .thursday { background-color: #f9f4c2; }
+  .friday { background-color: #f9c2e6; }
+  .saturday { background-color: #c2f4f9; }
+  #lastUpdated {
+    margin-top: 10px;
     font-style: italic;
+    text-align: center;
     color: #555;
   }
-  #loginSection {
-    max-width: 900px;
-    margin: 20px auto;
+  #loginSection, #adminSection {
+    margin-top: 20px;
     text-align: center;
   }
-  #loginSection input[type="password"] {
-    padding: 8px;
-    font-size: 16px;
+  input[type="password"], input[type="text"] {
+    padding: 5px;
+    width: 220px;
+    margin: 5px 0;
   }
-  #loginSection button {
-    padding: 8px 16px;
-    font-size: 16px;
-    background: #0f3c91;
-    color: white;
-    border: none;
-    border-radius: 6px;
+  button {
+    padding: 5px 15px;
     cursor: pointer;
-    margin-left: 8px;
   }
-  #timetableWrapper {
-    max-width: 900px;
-    margin: 0 auto 40px;
-    overflow-x: auto;
-    background: white;
-    padding: 12px;
-    border-radius: 8px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  #loginMsg {
+    color: red;
+    margin-top: 5px;
   }
-  table {
-    border-collapse: collapse;
+  #tokenInput {
     width: 100%;
-    min-width: 700px;
-  }
-  th, td {
-    border: 1px solid #d3dff9;
-    text-align: center;
-    padding: 10px 8px;
-  }
-  th {
-    background-color: #a3c1ff;
-    color: #0f3c91;
-    font-weight: 700;
-  }
-  /* Các thứ trong tuần nền màu khác nhau */
-  th:nth-child(2), td:nth-child(2) { background-color: #ffdae8; } /* Thứ 2,4,6 màu hồng nhạt */
-  th:nth-child(4), td:nth-child(4) { background-color: #ffdae8; }
-  th:nth-child(6), td:nth-child(6) { background-color: #ffdae8; }
-
-  th:nth-child(3), td:nth-child(3) { background-color: #d4e4ff; } /* Thứ 3,5,7 màu xanh dương nhạt */
-  th:nth-child(5), td:nth-child(5) { background-color: #d4e4ff; }
-  th:nth-child(7), td:nth-child(7) { background-color: #d4e4ff; }
-
-  td.session-header {
-    background: #c7e3a4;
-    font-weight: bold;
-    text-align: left;
-    padding-left: 14px;
-    font-size: 16px;
-  }
-  td.editable {
-    cursor: pointer;
-  }
-  td.editable[contenteditable="true"] {
-    background-color: #fff8dc;
-    border: 1px solid #f2a365;
-  }
-  button#logoutBtn {
-    background: #b84c4c;
-    margin-left: 10px;
-  }
-  #loginSection, #logoutSection {
-    max-width: 900px;
-    margin: 20px auto;
-    text-align: center;
+    box-sizing: border-box;
   }
 </style>
 </head>
 <body>
 
-<header>
-  <h1>THỜI KHÓA BIỂU LỚP 8A9</h1>
-</header>
+<h1>Thời khóa biểu Lớp 8A9</h1>
 
-<div id="status"></div>
-<div id="updateDate"></div>
+<div id="lastUpdated"></div>
+
+<div id="schedule">Đang tải thời khóa biểu...</div>
+
+<div id="adminSection" style="display:none;">
+  <h2>Admin chỉnh sửa</h2>
+  <button id="saveBtn">Lưu thay đổi lên GitHub</button>
+  <button id="logoutBtn">Đăng xuất</button>
+  <div id="saveMsg" style="margin-top:10px;"></div>
+</div>
 
 <div id="loginSection">
-  <input type="password" id="passwordInput" placeholder="Nhập mật khẩu để chỉnh sửa" />
+  <h3>Đăng nhập admin</h3>
+  <input type="password" id="adminPass" placeholder="Mật khẩu admin" /><br />
+  <input type="text" id="tokenInput" placeholder="Nhập GitHub Personal Access Token" /><br />
   <button id="loginBtn">Đăng nhập</button>
-</div>
-
-<div id="logoutSection" style="display:none;">
-  <span>Đã đăng nhập với quyền chỉnh sửa.</span>
-  <button id="logoutBtn">Đăng xuất</button>
-</div>
-
-<div id="timetableWrapper">
-  <table id="timetable">
-    <thead>
-      <tr>
-        <th>Buổi / Tiết</th>
-        <th>Thứ 2</th>
-        <th>Thứ 3</th>
-        <th>Thứ 4</th>
-        <th>Thứ 5</th>
-        <th>Thứ 6</th>
-        <th>Thứ 7</th>
-      </tr>
-    </thead>
-    <tbody id="tbody">
-      <!-- Tạo động bằng JS -->
-    </tbody>
-  </table>
+  <div id="loginMsg"></div>
 </div>
 
 <script>
-(() => {
-  const repoOwner = "ductrong49";
-  const repoName = "8a9";
-  const filePath = "tkb.json";
-  const branch = "main";
-  const githubToken = "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";
-  const adminPassword = "Ductrong123";
+  // Cấu hình repo GitHub của bạn
+  const GITHUB_OWNER = "ductrong49";
+  const GITHUB_REPO = "8A9";
+  const FILE_PATH = "data.json";
+  const BRANCH = "main";
 
-  const statusDiv = document.getElementById("status");
-  const updateDateDiv = document.getElementById("updateDate");
-  const loginSection = document.getElementById("loginSection");
-  const logoutSection = document.getElementById("logoutSection");
-  const passwordInput = document.getElementById("passwordInput");
-  const loginBtn = document.getElementById("loginBtn");
-  const logoutBtn = document.getElementById("logoutBtn");
-  const tbody = document.getElementById("tbody");
+  const API_BASE = `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${FILE_PATH}`;
+  const RAW_BASE = `https://raw.githubusercontent.com/${GITHUB_OWNER}/${GITHUB_REPO}/${BRANCH}/${FILE_PATH}`;
 
-  let timetableData = null;
-  let fileSha = null;
+  let scheduleData = null;
+  let fileSHA = null;
   let isAdmin = false;
+  let adminToken = "";
 
-  // Hàm mã hóa base64 unicode đúng cách
-  function base64EncodeUnicode(str) {
-    return btoa(encodeURIComponent(str).replace(/%([0-9A-F]{2})/g,
-      (match, p1) => String.fromCharCode('0x' + p1)));
-  }
+  const days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+  const dayClasses = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday"];
 
-  // Hàm decode base64 unicode
-  function base64DecodeUnicode(str) {
-    return decodeURIComponent(atob(str).split('').map(c => {
-      return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
-    }).join(''));
-  }
+  const scheduleDiv = document.getElementById("schedule");
+  const lastUpdatedDiv = document.getElementById("lastUpdated");
+  const loginSection = document.getElementById("loginSection");
+  const adminSection = document.getElementById("adminSection");
+  const loginMsg = document.getElementById("loginMsg");
+  const saveMsg = document.getElementById("saveMsg");
 
-  function showStatus(msg, color = "black") {
-    statusDiv.textContent = msg;
-    statusDiv.style.color = color;
-  }
-
-  // Lấy thông tin file từ GitHub
-  async function fetchFile() {
-    showStatus("Đang tải dữ liệu...");
+  async function fetchSchedule() {
+    scheduleDiv.textContent = "Đang tải thời khóa biểu...";
     try {
-      const res = await fetch(`https://api.github.com/repos/${repoOwner}/${repoName}/contents/${filePath}?ref=${branch}`, {
-        headers: { Authorization: "token " + githubToken }
-      });
-      if (!res.ok) throw new Error(`Lỗi khi lấy file: ${res.status} ${res.statusText}`);
-      const json = await res.json();
-      fileSha = json.sha;
-      timetableData = JSON.parse(base64DecodeUnicode(json.content));
-      if (!timetableData.MORNING || !timetableData.AFTERNOON) throw new Error("Dữ liệu không hợp lệ");
-      renderTable();
-      updateDateDiv.textContent = "Cập nhật lần cuối: " + new Date(json.git_url ? json.git_url : Date.now()).toLocaleString();
-      showStatus("Tải dữ liệu thành công", "green");
+      const res = await fetch(RAW_BASE + "?t=" + new Date().getTime());
+      if (!res.ok) throw new Error("Không lấy được dữ liệu từ GitHub");
+      const data = await res.json();
+      scheduleData = data;
+      renderSchedule();
     } catch (e) {
-      showStatus(e.message, "red");
-      timetableData = { MORNING: Array(5).fill(null).map(() => Array(6).fill("")), AFTERNOON: Array(5).fill(null).map(() => Array(6).fill("")) };
-      renderTable();
+      scheduleDiv.textContent = "Lỗi tải dữ liệu: " + e.message;
     }
   }
 
-  // Vẽ bảng thời khóa biểu
-  function renderTable() {
-    tbody.innerHTML = "";
-    // Buổi sáng tiêu đề
-    let tr = document.createElement("tr");
-    let td = document.createElement("td");
-    td.className = "session-header";
-    td.textContent = "BUỔI SÁNG";
-    td.colSpan = 7;
-    tr.appendChild(td);
-    tbody.appendChild(tr);
-    // Buổi sáng 5 tiết
-    for (let r = 0; r < 5; r++) {
-      tr = document.createElement("tr");
-      td = document.createElement("td");
-      td.textContent = `Tiết ${r + 1}`;
-      td.style.textAlign = "left";
-      td.style.fontWeight = "bold";
-      tr.appendChild(td);
-      for (let c = 0; c < 6; c++) {
-        const cell = document.createElement("td");
-        cell.textContent = timetableData.MORNING[r][c] || "";
-        if (isAdmin) {
-          cell.contentEditable = "true";
-          cell.classList.add("editable");
-          cell.dataset.session = "MORNING";
-          cell.dataset.r = r;
-          cell.dataset.c = c;
-          cell.style.backgroundColor = "#fff8dc";
-          cell.style.border = "1px solid #f2a365";
-          cell.addEventListener("input", () => {
-            cell.classList.add("edited");
-          });
-        }
-        tr.appendChild(cell);
-      }
-      tbody.appendChild(tr);
-    }
-    // Buổi chiều tiêu đề
-    tr = document.createElement("tr");
-    td = document.createElement("td");
-    td.className = "session-header";
-    td.textContent = "BUỔI CHIỀU";
-    td.colSpan = 7;
-    tr.appendChild(td);
-    tbody.appendChild(tr);
-    // Buổi chiều 5 tiết
-    for (let r = 0; r < 5; r++) {
-      tr = document.createElement("tr");
-      td = document.createElement("td");
-      td.textContent = `Tiết ${r + 1}`;
-      td.style.textAlign = "left";
-      td.style.fontWeight = "bold";
-      tr.appendChild(td);
-      for (let c = 0; c < 6; c++) {
-        const cell = document.createElement("td");
-        cell.textContent = timetableData.AFTERNOON[r][c] || "";
-        if (isAdmin) {
-          cell.contentEditable = "true";
-          cell.classList.add("editable");
-          cell.dataset.session = "AFTERNOON";
-          cell.dataset.r = r;
-          cell.dataset.c = c;
-          cell.style.backgroundColor = "#fff8dc";
-          cell.style.border = "1px solid #f2a365";
-          cell.addEventListener("input", () => {
-            cell.classList.add("edited");
-          });
-        }
-        tr.appendChild(cell);
-      }
-      tbody.appendChild(tr);
-    }
+  async function fetchFileSHA() {
+    const res = await fetch(API_BASE + `?ref=${BRANCH}`, {
+      headers: { Authorization: `token ${adminToken}` }
+    });
+    if (!res.ok) throw new Error("Không lấy được SHA file data.json");
+    const data = await res.json();
+    return data.sha;
   }
 
-  // Lưu dữ liệu lên GitHub
-  async function saveFile() {
-    showStatus("Đang lưu dữ liệu...");
+  function renderSchedule() {
+    scheduleDiv.innerHTML = "";
+    days.forEach((day, i) => {
+      const dayDiv = document.createElement("div");
+      dayDiv.classList.add("dayColumn", dayClasses[i]);
+
+      const header = document.createElement("div");
+      header.classList.add("dayHeader");
+      header.textContent = day;
+      dayDiv.appendChild(header);
+
+      // Buổi sáng
+      const morningDiv = document.createElement("div");
+      morningDiv.classList.add("morning");
+      morningDiv.innerHTML = "<strong>Sáng</strong>";
+      scheduleData.schedule[day].morning.forEach((subject, idx) => {
+        const p = document.createElement("div");
+        p.classList.add("period");
+        if (isAdmin) p.classList.add("editable");
+        p.dataset.day = day;
+        p.dataset.session = "morning";
+        p.dataset.index = idx;
+        p.textContent = subject;
+        if (isAdmin) {
+          p.addEventListener("click", () => editSubject(p));
+        }
+        morningDiv.appendChild(p);
+      });
+      dayDiv.appendChild(morningDiv);
+
+      // Buổi chiều
+      const afternoonDiv = document.createElement("div");
+      afternoonDiv.classList.add("afternoon");
+      afternoonDiv.innerHTML = "<strong>Chiều</strong>";
+      scheduleData.schedule[day].afternoon.forEach((subject, idx) => {
+        const p = document.createElement("div");
+        p.classList.add("period");
+        if (isAdmin) p.classList.add("editable");
+        p.dataset.day = day;
+        p.dataset.session = "afternoon";
+        p.dataset.index = idx;
+        p.textContent = subject;
+        if (isAdmin) {
+          p.addEventListener("click", () => editSubject(p));
+        }
+        afternoonDiv.appendChild(p);
+      });
+      dayDiv.appendChild(afternoonDiv);
+
+      scheduleDiv.appendChild(dayDiv);
+    });
+
+    const d = new Date(scheduleData.lastUpdated);
+    lastUpdatedDiv.textContent = "Cập nhật lần cuối: " + d.toLocaleString("vi-VN");
+  }
+
+  function editSubject(element) {
+    if (!isAdmin) return;
+    const oldValue = element.textContent;
+    const input = document.createElement("input");
+    input.type = "text";
+    input.value = oldValue;
+    element.textContent = "";
+    element.appendChild(input);
+    input.focus();
+
+    input.addEventListener("blur", () => {
+      const newValue = input.value.trim() || oldValue;
+      const day = element.dataset.day;
+      const session = element.dataset.session;
+      const idx = element.dataset.index;
+
+      scheduleData.schedule[day][session][idx] = newValue;
+      scheduleData.lastUpdated = new Date().toISOString();
+
+      element.removeChild(input);
+      element.textContent = newValue;
+
+      const d = new Date(scheduleData.lastUpdated);
+      lastUpdatedDiv.textContent = "Cập nhật lần cuối: " + d.toLocaleString("vi-VN");
+
+      saveMsg.textContent = "";
+    });
+
+    input.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") {
+        input.blur();
+      }
+    });
+  }
+
+  async function saveToGitHub() {
+    if (!adminToken) {
+      saveMsg.style.color = "red";
+      saveMsg.textContent = "Bạn chưa nhập token GitHub!";
+      return;
+    }
+    saveMsg.style.color = "black";
+    saveMsg.textContent = "Đang lưu dữ liệu lên GitHub...";
     try {
-      // Cập nhật dữ liệu từ các ô editable
-      if (isAdmin) {
-        const editableCells = tbody.querySelectorAll("td.editable");
-        editableCells.forEach(cell => {
-          const session = cell.dataset.session;
-          const r = +cell.dataset.r;
-          const c = +cell.dataset.c;
-          if (!timetableData[session]) timetableData[session] = [];
-          if (!timetableData[session][r]) timetableData[session][r] = [];
-          timetableData[session][r][c] = cell.textContent.trim();
-        });
+      if (!fileSHA) {
+        fileSHA = await fetchFileSHA();
       }
-
-      // Cập nhật thời gian lần cuối
-      timetableData.lastUpdated = new Date().toISOString();
-
-      // Mã hóa nội dung
-      const content = btoa(unescape(encodeURIComponent(JSON.stringify(timetableData, null, 2))));
-
-      // Gửi PUT lên GitHub
-      const res = await fetch(`https://api.github.com/repos/${repoOwner}/${repoName}/contents/${filePath}`, {
+      const contentBase64 = btoa(unescape(encodeURIComponent(JSON.stringify(scheduleData, null, 2))));
+      const res = await fetch(API_BASE, {
         method: "PUT",
         headers: {
-          Authorization: "token " + githubToken,
+          Authorization: `token ${adminToken}`,
           "Content-Type": "application/json"
         },
         body: JSON.stringify({
-          message: "Cập nhật thời khóa biểu từ web",
-          content: content,
-          sha: fileSha,
-          branch: branch
+          message: `Cập nhật thời khóa biểu ${new Date().toLocaleString()}`,
+          content: contentBase64,
+          sha: fileSHA,
+          branch: BRANCH
         })
       });
-
       if (!res.ok) {
-        const errText = await res.text();
-        throw new Error(`Lỗi khi lưu: ${res.status} ${res.statusText} - ${errText}`);
+        const err = await res.json();
+        throw new Error(err.message || "Lỗi khi cập nhật file");
       }
-
-      const resJson = await res.json();
-      fileSha = resJson.content.sha;
-      showStatus("Lưu thành công!", "green");
-      updateDateDiv.textContent = "Cập nhật lần cuối: " + new Date(timetableData.lastUpdated).toLocaleString();
-      renderTable();
+      const result = await res.json();
+      fileSHA = result.content.sha;
+      saveMsg.style.color = "green";
+      saveMsg.textContent = "Lưu dữ liệu thành công!";
     } catch (e) {
-      showStatus(e.message, "red");
+      saveMsg.style.color = "red";
+      saveMsg.textContent = "Lỗi lưu dữ liệu: " + e.message;
     }
   }
 
-  // Xử lý đăng nhập
-  loginBtn.addEventListener("click", () => {
-    if (passwordInput.value === adminPassword) {
+  document.getElementById("loginBtn").addEventListener("click", () => {
+    const pass = document.getElementById("adminPass").value;
+    const token = document.getElementById("tokenInput").value.trim();
+
+    if (pass === "admin123" && token) {
       isAdmin = true;
+      adminToken = token;
       loginSection.style.display = "none";
-      logoutSection.style.display = "block";
-      showStatus("Đã đăng nhập với quyền chỉnh sửa.", "green");
-      renderTable();
+      adminSection.style.display = "block";
+      loginMsg.textContent = "";
+      saveMsg.textContent = "";
+      fetchFileSHA().then(sha => {
+        fileSHA = sha;
+      }).catch(() => {
+        fileSHA = null;
+      });
+      renderSchedule();
     } else {
-      showStatus("Mật khẩu không đúng!", "red");
+      loginMsg.textContent = "Mật khẩu hoặc token sai hoặc chưa nhập!";
     }
   });
 
-  logoutBtn.addEventListener("click", () => {
+  document.getElementById("logoutBtn").addEventListener("click", () => {
     isAdmin = false;
+    adminToken = "";
     loginSection.style.display = "block";
-    logoutSection.style.display = "none";
-    showStatus("Đã đăng xuất.", "black");
-    renderTable();
+    adminSection.style.display = "none";
+    saveMsg.textContent = "";
+    renderSchedule();
   });
 
-  // Lưu dữ liệu khi rời trang hoặc thoát chỉnh sửa
-  window.addEventListener("beforeunload", (e) => {
-    if (isAdmin) {
-      e.preventDefault();
-      e.returnValue = "";
-      // Lưu file (không chặn thoát)
-      saveFile();
-    }
+  document.getElementById("saveBtn").addEventListener("click", () => {
+    saveToGitHub();
   });
 
-  // Ngoài ra có thể thêm nút lưu trực tiếp khi chỉnh sửa xong (ví dụ nhấn Ctrl+S)
-  document.addEventListener("keydown", (e) => {
-    if (isAdmin && (e.key === 's' || e.key === 'S') && (e.ctrlKey || e.metaKey)) {
-      e.preventDefault();
-      saveFile();
-    }
-  });
-
-  // Khởi động lần đầu
-  fetchFile();
-})();
+  // Load dữ liệu lần đầu
+  fetchSchedule();
 </script>
 
 </body>
