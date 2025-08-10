@@ -3,7 +3,7 @@
   "schedule": {
     "Thứ 2": {
       "morning": ["Sinh", "Văn", "Anh", "Lý", "Hóa"],
-      "afternoon": ["Sử", "Địa", "Thể dục", "GDCD", "Tin học"]
+      "afternoon": ["Địa", "Địa", "Thể dục", "GDCD", "Tin học"]
     },
     "Thứ 3": {
       "morning": ["Toán", "Văn", "Anh", "Sinh", "Hóa"],
