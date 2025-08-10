@@ -9,11 +9,18 @@
     max-width: 900px;
     margin: 20px auto;
     padding: 0 10px;
+    background-image: url('background.jpg'); /* Thay bằng link ảnh nền */
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
   }
   h1 {
-    color: #1e3a8a; /* xanh dương */
+    color: #1e3a8a;
     text-align: center;
     margin-bottom: 15px;
+    background-color: rgba(200, 200, 200, 0.7); /* xám nhạt mờ */
+    padding: 8px;
+    border-radius: 8px;
   }
   #weekInfo {
     text-align: center;
@@ -21,11 +28,17 @@
     margin-bottom: 10px;
     font-size: 1.1em;
     color: #1e3a8a;
+    background-color: rgba(200, 200, 200, 0.7);
+    padding: 8px;
+    border-radius: 8px;
   }
   #lastUpdated {
     text-align: center;
     margin-bottom: 20px;
     font-style: italic;
+    background-color: rgba(200, 200, 200, 0.7);
+    padding: 8px;
+    border-radius: 8px;
   }
   table {
     width: 100%;
@@ -33,7 +46,7 @@
   }
   th {
     background-color: #0b6623; /* xanh lá đậm */
-    color: green;
+    color: white;
     padding: 8px;
     text-align: center;
   }
@@ -41,6 +54,7 @@
     border: 1px solid #ccc;
     padding: 6px 8px;
     text-align: center;
+    background-color: white; /* trắng cho ô không màu */
   }
 
   /* Màu nền khác nhau cho từng thứ */
@@ -58,31 +72,33 @@
     font-size: 1.1em;
     border-top: 2px solid #ccc;
     border-bottom: 2px solid #ccc;
-    padding: 4px 8px;
-  }
-
-  /* Loại bỏ khoảng cách dòng */
-  .spacing-row td {
-    border: none;
-    height: 2px;
-    padding: 0;
+    padding: 2px 8px;
     margin: 0;
-    background: transparent;
+    background-color: white;
   }
 
-  /* Màu chữ buổi sáng và chiều */
   .morning-title {
-    color: #1e3a8a; /* xanh dương */
+    color: #1e3a8a;
   }
   .afternoon-title {
-    color: #8b4513; /* nâu */
+    color: #8b4513;
   }
-  /* Buổi sáng và chiều tên tiết */
   .morning {
     font-weight: bold;
   }
   .afternoon {
     font-weight: bold;
+  }
+
+  /* Dòng giáo viên chủ nhiệm */
+  #homeroomTeacher {
+    text-align: center;
+    margin-top: 20px;
+    font-weight: bold;
+    color: #1e3a8a;
+    background-color: rgba(200, 200, 200, 0.7);
+    padding: 8px;
+    border-radius: 8px;
   }
 </style>
 </head>
@@ -111,47 +127,46 @@
   </tbody>
 </table>
 
+<div id="homeroomTeacher">
+  Giáo viên chủ nhiệm: Nguyễn Thị A - SĐT: 0912345678
+</div>
+
 <script>
 const dataUrl = "https://raw.githubusercontent.com/ductrong49/8a9/main/data.json";
-
 const days = ["Thứ 2", "Thứ 3", "Thứ 4", "Thứ 5", "Thứ 6", "Thứ 7"];
 const classes = ["thu2", "thu3", "thu4", "thu5", "thu6", "thu7"];
 
-// Hàm tính tuần học hoặc đếm ngày đến 8/9/2025
+// Tính tuần học hoặc đếm ngày
 function updateWeekInfo() {
-  const startDate = new Date("2025-09-08T00:00:00"); // Ngày bắt đầu tuần 1
+  const startDate = new Date("2025-09-08T00:00:00");
   const now = new Date();
-
-  const diffMs = now - startDate; // hiệu số millisec
-
+  const diffMs = now - startDate;
   const weekInfoDiv = document.getElementById("weekInfo");
 
   if(diffMs < 0) {
-    // Chưa đến ngày bắt đầu, đếm ngược ngày
     const diffDays = Math.ceil(Math.abs(diffMs) / (1000 * 60 * 60 * 24));
     weekInfoDiv.textContent = `Còn ${diffDays} ngày đến tuần học bắt đầu (08/09/2025)`;
   } else {
-    // Đã đến hoặc qua ngày bắt đầu, tính số tuần (tính từ 1)
     const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
     const weekNumber = Math.floor(diffDays / 7) + 1;
     weekInfoDiv.textContent = `Tuần học hiện tại: Tuần ${weekNumber}`;
   }
 }
-
 updateWeekInfo();
 
+// Lấy dữ liệu từ file JSON
 fetch(dataUrl)
   .then(res => res.json())
   .then(data => {
+    const lastUpdated = new Date(data.lastUpdated);
     document.getElementById("lastUpdated").textContent =
-      "Cập nhật lần cuối: " + new Date(data.lastUpdated).toLocaleString("vi-VN");
+      "Cập nhật lần cuối: " + (isNaN(lastUpdated) ? "Không rõ" : lastUpdated.toLocaleString("vi-VN"));
 
     const tbody = document.getElementById("scheduleBody");
-
     const morningPeriods = 5;
     const afternoonPeriods = 5;
 
-    // Dòng tiêu đề buổi sáng
+    // Buổi sáng
     let trSessionMorning = document.createElement("tr");
     let tdSessionMorning = document.createElement("td");
     tdSessionMorning.colSpan = 7;
@@ -160,7 +175,6 @@ fetch(dataUrl)
     trSessionMorning.appendChild(tdSessionMorning);
     tbody.appendChild(trSessionMorning);
 
-    // Các tiết buổi sáng
     for(let i=0; i<morningPeriods; i++) {
       const tr = document.createElement("tr");
       const tdBuoiTiet = document.createElement("td");
@@ -178,7 +192,7 @@ fetch(dataUrl)
       tbody.appendChild(tr);
     }
 
-    // Dòng tiêu đề buổi chiều
+    // Buổi chiều
     let trSessionAfternoon = document.createElement("tr");
     let tdSessionAfternoon = document.createElement("td");
     tdSessionAfternoon.colSpan = 7;
@@ -187,7 +201,6 @@ fetch(dataUrl)
     trSessionAfternoon.appendChild(tdSessionAfternoon);
     tbody.appendChild(trSessionAfternoon);
 
-    // Các tiết buổi chiều
     for(let i=0; i<afternoonPeriods; i++) {
       const tr = document.createElement("tr");
       const tdBuoiTiet = document.createElement("td");
