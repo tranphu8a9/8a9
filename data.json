@@ -8,7 +8,22 @@
     "Thứ 3": {
       "morning": ["Toán", "Văn", "Anh", "Sinh", "Hóa"],
       "afternoon": ["Sử", "Địa", "Thể dục", "GDCD", "Âm nhạc"]
+    },
+    "Thứ 4": {
+      "morning": ["Toán", "Văn", "Anh", "Lý", "Hóa"],
+      "afternoon": ["Sử", "Địa", "Thể dục", "GDCD", "Tin học"]
+    },
+    "Thứ 5": {
+      "morning": ["Toán", "Văn", "Anh", "Sinh", "Hóa"],
+      "afternoon": ["Sử", "Địa", "Thể dục", "GDCD", "Âm nhạc"]
+    },
+    "Thứ 6": {
+      "morning": ["Toán", "Văn", "Anh", "Lý", "Hóa"],
+      "afternoon": ["Sử", "Địa", "Thể dục", "GDCD", "Tin học"]
+    },
+    "Thứ 7": {
+      "morning": ["Toán", "Văn", "Anh", "Sinh", "Hóa"],
+      "afternoon": ["Sử", "Địa", "Thể dục", "GDCD", "Âm nhạc"]
     }
-    // ... các ngày còn lại
   }
 }
