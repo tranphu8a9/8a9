@@ -52,7 +52,7 @@
     margin-top: 20px;
     text-align: center;
   }
-  input[type="password"], input[type="text"] {
+  input[type="password"] {
     padding: 5px;
     width: 250px;
     margin: 5px 0;
@@ -135,12 +135,17 @@
   }
 
   async function fetchFileSHA() {
-    const res = await fetch(API_BASE + `?ref=${BRANCH}`, {
-      headers: { Authorization: `token ${adminToken}` }
-    });
-    if (!res.ok) throw new Error("Không lấy được SHA file data.json");
-    const data = await res.json();
-    return data.sha;
+    try {
+      const res = await fetch(API_BASE + `?ref=${BRANCH}`, {
+        headers: { Authorization: `token ${adminToken}` }
+      });
+      if (!res.ok) throw new Error("Không lấy được SHA file data.json");
+      const data = await res.json();
+      return data.sha;
+    } catch (e) {
+      console.error("Lỗi lấy SHA:", e);
+      return null;
+    }
   }
 
   function renderSchedule() {
@@ -234,6 +239,7 @@
     try {
       if (!fileSHA) {
         fileSHA = await fetchFileSHA();
+        if (!fileSHA) throw new Error("Không lấy được SHA của file.");
       }
       const contentBase64 = btoa(unescape(encodeURIComponent(JSON.stringify(scheduleData, null, 2))));
       const res = await fetch(API_BASE, {
@@ -272,7 +278,11 @@
       adminSection.style.display = "block";
       loginMsg.textContent = "";
       saveMsg.textContent = "";
-      fetchFileSHA().then(sha => { fileSHA = sha; }).catch(() => { fileSHA = null; });
+      fetchFileSHA().then(sha => {
+        fileSHA = sha;
+      }).catch(() => {
+        fileSHA = null;
+      });
       renderSchedule();
     } else {
       loginMsg.textContent = "Mật khẩu sai!";
@@ -285,6 +295,10 @@
     adminSection.style.display = "none";
     saveMsg.textContent = "";
     renderSchedule();
+  });
+
+  document.getElementById("saveBtn").addEventListener("click", () => {
+    saveToGitHub();
   });
 
   fetchSchedule();
