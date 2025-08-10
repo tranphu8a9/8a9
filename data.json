@@ -2,7 +2,7 @@
   "lastUpdated": "2025-08-10T08:00:00Z",
   "schedule": {
     "Thứ 2": {
-      "morning": ["Toán", "Văn", "Anh", "Lý", "Hóa"],
+      "morning": ["Sinh", "Văn", "Anh", "Lý", "Hóa"],
       "afternoon": ["Sử", "Địa", "Thể dục", "GDCD", "Tin học"]
     },
     "Thứ 3": {
