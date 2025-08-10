@@ -2,341 +2,79 @@
 <html lang="vi">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Thời khóa biểu Lớp 8A9</title>
 <style>
-  body { font-family: Arial, sans-serif; padding: 10px; }
+  body { font-family: Arial; padding: 10px; }
   h1 { text-align: center; }
-  #schedule {
-    display: grid;
-    grid-template-columns: repeat(6, 1fr);
-    gap: 5px;
-    margin-top: 20px;
-    overflow-x: auto;
-  }
-  .dayColumn {
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    padding: 5px;
-    display: flex;
-    flex-direction: column;
-    min-width: 120px;
-  }
-  .dayHeader {
-    font-weight: bold;
-    text-align: center;
-    margin-bottom: 8px;
-    background-color: #333;
-    color: white;
-    padding: 5px 0;
-    border-radius: 5px 5px 0 0;
-  }
-  .morning, .afternoon {
-    margin-bottom: 10px;
-    flex-grow: 1;
-  }
-  .sessionTitle {
-    font-weight: bold;
-    margin-bottom: 5px;
-    text-align: center;
-    text-transform: uppercase;
-    font-size: 0.9em;
-    color: #555;
-  }
-  .period {
-    border: 1px solid #aaa;
-    padding: 5px;
-    margin: 3px 0;
-    cursor: default;
-    border-radius: 3px;
-    background-color: #fafafa;
-    font-size: 0.9em;
-    text-align: center;
-  }
-  .period.editable {
-    cursor: pointer;
-    background-color: #e6f0ff;
-    transition: background-color 0.3s ease;
-  }
-  .period.editable:hover {
-    background-color: #cce0ff;
-  }
-  .thu2 { background-color: #f9c2c2; }
-  .thu3 { background-color: #c2f9c2; }
-  .thu4 { background-color: #c2d9f9; }
-  .thu5 { background-color: #f9f4c2; }
-  .thu6 { background-color: #f9c2e6; }
-  .thu7 { background-color: #c2f4f9; }
-  #lastUpdated {
-    margin-top: 10px;
-    font-style: italic;
-    text-align: center;
-    color: #555;
-  }
-  #loginSection, #adminSection {
-    margin-top: 20px;
-    text-align: center;
-  }
-  input[type="password"] {
-    padding: 5px;
-    width: 250px;
-    margin: 5px 0;
-  }
-  button {
-    padding: 6px 20px;
-    cursor: pointer;
-    margin: 5px;
-  }
-  #loginMsg, #saveMsg {
-    margin-top: 5px;
-    color: red;
-  }
+  table { border-collapse: collapse; width: 100%; }
+  th, td { border: 1px solid #ccc; padding: 8px; text-align: center; }
+  th { background-color: #333; color: white; }
+  .morning { background-color: #e0f7fa; }
+  .afternoon { background-color: #ffe0b2; }
 </style>
 </head>
 <body>
-
 <h1>Thời khóa biểu Lớp 8A9</h1>
-
 <div id="lastUpdated"></div>
-
-<div id="schedule">Đang tải thời khóa biểu...</div>
-
-<div id="adminSection" style="display:none;">
-  <h2>Admin chỉnh sửa</h2>
-  <button id="saveBtn">Lưu thay đổi lên GitHub</button>
-  <button id="logoutBtn">Đăng xuất</button>
-  <div id="saveMsg"></div>
-</div>
-
-<div id="loginSection">
-  <h3>Đăng nhập admin</h3>
-  <input type="password" id="adminPass" placeholder="Mật khẩu admin" /><br />
-  <button id="loginBtn">Đăng nhập</button>
-  <div id="loginMsg"></div>
-</div>
+<table id="scheduleTable">
+  <thead>
+    <tr>
+      <th>Buổi / Thứ</th>
+      <th>Thứ 2</th>
+      <th>Thứ 3</th>
+      <th>Thứ 4</th>
+      <th>Thứ 5</th>
+      <th>Thứ 6</th>
+      <th>Thứ 7</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Sáng</td>
+      <td class="morning"></td>
+      <td class="morning"></td>
+      <td class="morning"></td>
+      <td class="morning"></td>
+      <td class="morning"></td>
+      <td class="morning"></td>
+    </tr>
+    <tr>
+      <td>Chiều</td>
+      <td class="afternoon"></td>
+      <td class="afternoon"></td>
+      <td class="afternoon"></td>
+      <td class="afternoon"></td>
+      <td class="afternoon"></td>
+      <td class="afternoon"></td>
+    </tr>
+  </tbody>
+</table>
 
 <script>
-  const GITHUB_OWNER = "ductrong49";
-  const GITHUB_REPO = "8a9";
-  const FILE_PATH = "data.json";
-  const BRANCH = "main";
+  const rawURL = "https://raw.githubusercontent.com/ductrong49/8a9/main/data.json";
 
-  const API_BASE = `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${FILE_PATH}`;
-  const RAW_BASE = `https://raw.githubusercontent.com/${GITHUB_OWNER}/${GITHUB_REPO}/${BRANCH}/${FILE_PATH}`;
-
-  const days = ["Thứ 2", "Thứ 3", "Thứ 4", "Thứ 5", "Thứ 6", "Thứ 7"];
-  const dayKeys = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
-  const dayClasses = ["thu2", "thu3", "thu4", "thu5", "thu6", "thu7"];
-
-  let scheduleData = null;
-  let fileSHA = null;
-  let isAdmin = false;
-
-  // Nhớ thay token nếu đổi token mới
-  const adminToken = "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";
-
-  const scheduleDiv = document.getElementById("schedule");
-  const lastUpdatedDiv = document.getElementById("lastUpdated");
-  const loginSection = document.getElementById("loginSection");
-  const adminSection = document.getElementById("adminSection");
-  const loginMsg = document.getElementById("loginMsg");
-  const saveMsg = document.getElementById("saveMsg");
-
-  async function fetchSchedule() {
-    scheduleDiv.textContent = "Đang tải thời khóa biểu...";
+  async function loadSchedule() {
     try {
-      const res = await fetch(RAW_BASE + "?t=" + new Date().getTime());
-      if (!res.ok) throw new Error("Không lấy được dữ liệu từ GitHub");
+      const res = await fetch(rawURL);
       const data = await res.json();
-      scheduleData = data;
-      renderSchedule();
+
+      document.getElementById("lastUpdated").textContent = "Cập nhật lần cuối: " + new Date(data.lastUpdated).toLocaleString("vi-VN");
+
+      const days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+      const morningCells = document.querySelectorAll("td.morning");
+      const afternoonCells = document.querySelectorAll("td.afternoon");
+
+      days.forEach((day, i) => {
+        morningCells[i].textContent = data.schedule[day].morning.join(", ");
+        afternoonCells[i].textContent = data.schedule[day].afternoon.join(", ");
+      });
+
     } catch (e) {
-      scheduleDiv.textContent = "Lỗi tải dữ liệu: " + e.message;
-      console.error(e);
+      alert("Lỗi tải dữ liệu thời khóa biểu: " + e.message);
     }
   }
 
-  async function fetchFileSHA() {
-    try {
-      const res = await fetch(API_BASE + `?ref=${BRANCH}`, {
-        headers: { Authorization: `token ${adminToken}` }
-      });
-      if (!res.ok) {
-        const err = await res.json();
-        console.error("Lỗi lấy SHA chi tiết:", err);
-        throw new Error("Không lấy được SHA file data.json");
-      }
-      const data = await res.json();
-      console.log("SHA lấy được:", data.sha);
-      return data.sha;
-    } catch (e) {
-      console.error("Lỗi lấy SHA:", e);
-      return null;
-    }
-  }
-
-  function renderSchedule() {
-    scheduleDiv.innerHTML = "";
-    days.forEach((dayName, i) => {
-      const dayKey = dayKeys[i];
-      const dayDiv = document.createElement("div");
-      dayDiv.classList.add("dayColumn", dayClasses[i]);
-
-      const header = document.createElement("div");
-      header.classList.add("dayHeader");
-      header.textContent = dayName;
-      dayDiv.appendChild(header);
-
-      const morningDiv = document.createElement("div");
-      morningDiv.classList.add("morning");
-      const mornTitle = document.createElement("div");
-      mornTitle.classList.add("sessionTitle");
-      mornTitle.textContent = "Sáng";
-      morningDiv.appendChild(mornTitle);
-
-      scheduleData.schedule[dayKey].morning.forEach((subject, idx) => {
-        const p = document.createElement("div");
-        p.classList.add("period");
-        if (isAdmin) p.classList.add("editable");
-        p.dataset.day = dayKey;
-        p.dataset.session = "morning";
-        p.dataset.index = idx;
-        p.textContent = subject;
-        if (isAdmin) p.addEventListener("click", () => editSubject(p));
-        morningDiv.appendChild(p);
-      });
-      dayDiv.appendChild(morningDiv);
-
-      const afternoonDiv = document.createElement("div");
-      afternoonDiv.classList.add("afternoon");
-      const aftTitle = document.createElement("div");
-      aftTitle.classList.add("sessionTitle");
-      aftTitle.textContent = "Chiều";
-      afternoonDiv.appendChild(aftTitle);
-
-      scheduleData.schedule[dayKey].afternoon.forEach((subject, idx) => {
-        const p = document.createElement("div");
-        p.classList.add("period");
-        if (isAdmin) p.classList.add("editable");
-        p.dataset.day = dayKey;
-        p.dataset.session = "afternoon";
-        p.dataset.index = idx;
-        p.textContent = subject;
-        if (isAdmin) p.addEventListener("click", () => editSubject(p));
-        afternoonDiv.appendChild(p);
-      });
-      dayDiv.appendChild(afternoonDiv);
-
-      scheduleDiv.appendChild(dayDiv);
-    });
-
-    const d = new Date(scheduleData.lastUpdated);
-    lastUpdatedDiv.textContent = "Cập nhật lần cuối: " + d.toLocaleString("vi-VN");
-  }
-
-  function editSubject(element) {
-    if (!isAdmin) return;
-    const oldValue = element.textContent;
-    const input = document.createElement("input");
-    input.type = "text";
-    input.value = oldValue;
-    element.textContent = "";
-    element.appendChild(input);
-    input.focus();
-
-    input.addEventListener("blur", () => {
-      const newValue = input.value.trim() || oldValue;
-      const day = element.dataset.day;
-      const session = element.dataset.session;
-      const idx = element.dataset.index;
-
-      scheduleData.schedule[day][session][idx] = newValue;
-      scheduleData.lastUpdated = new Date().toISOString();
-
-      element.removeChild(input);
-      element.textContent = newValue;
-
-      const d = new Date(scheduleData.lastUpdated);
-      lastUpdatedDiv.textContent = "Cập nhật lần cuối: " + d.toLocaleString("vi-VN");
-
-      saveMsg.textContent = "";
-    });
-
-    input.addEventListener("keydown", (e) => {
-      if (e.key === "Enter") input.blur();
-    });
-  }
-
-  async function saveToGitHub() {
-    saveMsg.style.color = "black";
-    saveMsg.textContent = "Đang lưu dữ liệu lên GitHub...";
-    try {
-      if (!fileSHA) {
-        fileSHA = await fetchFileSHA();
-        if (!fileSHA) throw new Error("Không lấy được SHA của file.");
-      }
-      const contentBase64 = btoa(unescape(encodeURIComponent(JSON.stringify(scheduleData, null, 2))));
-      const res = await fetch(API_BASE, {
-        method: "PUT",
-        headers: {
-          Authorization: `token ${adminToken}`,
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          message: `Cập nhật thời khóa biểu ${new Date().toLocaleString()}`,
-          content: contentBase64,
-          sha: fileSHA,
-          branch: BRANCH
-        })
-      });
-      if (!res.ok) {
-        const err = await res.json();
-        throw new Error(err.message || "Lỗi khi cập nhật file");
-      }
-      const result = await res.json();
-      fileSHA = result.content.sha;
-      saveMsg.style.color = "green";
-      saveMsg.textContent = "Lưu dữ liệu thành công!";
-    } catch (e) {
-      saveMsg.style.color = "red";
-      saveMsg.textContent = "Lỗi lưu dữ liệu: " + e.message;
-    }
-  }
-
-  document.getElementById("loginBtn").addEventListener("click", () => {
-    const pass = document.getElementById("adminPass").value;
-
-    if (pass === "admin123") {
-      isAdmin = true;
-      loginSection.style.display = "none";
-      adminSection.style.display = "block";
-      loginMsg.textContent = "";
-      saveMsg.textContent = "";
-      fetchFileSHA().then(sha => {
-        fileSHA = sha;
-      }).catch(() => {
-        fileSHA = null;
-      });
-      renderSchedule();
-    } else {
-      loginMsg.textContent = "Mật khẩu sai!";
-    }
-  });
-
-  document.getElementById("logoutBtn").addEventListener("click", () => {
-    isAdmin = false;
-    loginSection.style.display = "block";
-    adminSection.style.display = "none";
-    saveMsg.textContent = "";
-    renderSchedule();
-  });
-
-  document.getElementById("saveBtn").addEventListener("click", () => {
-    saveToGitHub();
-  });
-
-  fetchSchedule();
+  loadSchedule();
 </script>
-
 </body>
 </html>
