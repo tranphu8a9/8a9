@@ -7,47 +7,83 @@
 <style>
   body { font-family: Arial, sans-serif; padding: 10px; }
   h1 { text-align: center; }
+
   #schedule {
-    display: flex;
-    justify-content: space-between;
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 5px;
     margin-top: 20px;
     overflow-x: auto;
   }
+
   .dayColumn {
     border: 1px solid #ccc;
-    padding: 5px;
-    min-width: 120px;
-    margin-right: 10px;
     border-radius: 5px;
+    padding: 5px;
+    display: flex;
+    flex-direction: column;
+    min-width: 120px;
   }
+
   .dayHeader {
     font-weight: bold;
     text-align: center;
-    margin-bottom: 10px;
+    margin-bottom: 8px;
+    background-color: #333;
+    color: white;
+    padding: 5px 0;
+    border-radius: 5px 5px 0 0;
   }
-  .morning, .afternoon { margin-bottom: 10px; }
+
+  .morning, .afternoon {
+    margin-bottom: 10px;
+    flex-grow: 1;
+  }
+
+  .sessionTitle {
+    font-weight: bold;
+    margin-bottom: 5px;
+    text-align: center;
+    text-transform: uppercase;
+    font-size: 0.9em;
+    color: #555;
+  }
+
   .period {
     border: 1px solid #aaa;
     padding: 5px;
     margin: 3px 0;
     cursor: default;
+    border-radius: 3px;
+    background-color: #fafafa;
+    font-size: 0.9em;
+    text-align: center;
   }
+
   .period.editable {
     cursor: pointer;
-    background-color: #eef;
+    background-color: #e6f0ff;
+    transition: background-color 0.3s ease;
   }
-  .monday { background-color: #f9c2c2; }
-  .tuesday { background-color: #c2f9c2; }
-  .wednesday { background-color: #c2d9f9; }
-  .thursday { background-color: #f9f4c2; }
-  .friday { background-color: #f9c2e6; }
-  .saturday { background-color: #c2f4f9; }
+  .period.editable:hover {
+    background-color: #cce0ff;
+  }
+
+  /* Màu nền từng ngày cho dễ phân biệt */
+  .thu2 { background-color: #f9c2c2; }
+  .thu3 { background-color: #c2f9c2; }
+  .thu4 { background-color: #c2d9f9; }
+  .thu5 { background-color: #f9f4c2; }
+  .thu6 { background-color: #f9c2e6; }
+  .thu7 { background-color: #c2f4f9; }
+
   #lastUpdated {
     margin-top: 10px;
     font-style: italic;
     text-align: center;
     color: #555;
   }
+
   #loginSection, #adminSection {
     margin-top: 20px;
     text-align: center;
@@ -65,9 +101,6 @@
   #loginMsg, #saveMsg {
     margin-top: 5px;
     color: red;
-  }
-  #tokenInput {
-    display: none; /* Ẩn ô nhập token */
   }
 </style>
 </head>
@@ -89,13 +122,11 @@
 <div id="loginSection">
   <h3>Đăng nhập admin</h3>
   <input type="password" id="adminPass" placeholder="Mật khẩu admin" /><br />
-  <input type="text" id="tokenInput" placeholder="Nhập GitHub Personal Access Token" /><br />
   <button id="loginBtn">Đăng nhập</button>
   <div id="loginMsg"></div>
 </div>
 
 <script>
-  // Thông tin repo GitHub của bạn:
   const GITHUB_OWNER = "ductrong49";
   const GITHUB_REPO = "8A9";
   const FILE_PATH = "data.json";
@@ -104,14 +135,15 @@
   const API_BASE = `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${FILE_PATH}`;
   const RAW_BASE = `https://raw.githubusercontent.com/${GITHUB_OWNER}/${GITHUB_REPO}/${BRANCH}/${FILE_PATH}`;
 
-  const days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
-  const dayClasses = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday"];
+  // Tiêu đề tiếng Việt thứ ngày
+  const days = ["Thứ 2", "Thứ 3", "Thứ 4", "Thứ 5", "Thứ 6", "Thứ 7"];
+  const dayKeys = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+  const dayClasses = ["thu2", "thu3", "thu4", "thu5", "thu6", "thu7"];
 
   let scheduleData = null;
   let fileSHA = null;
   let isAdmin = false;
 
-  // Token đã chèn sẵn, không cần nhập
   const adminToken = "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";
 
   const scheduleDiv = document.getElementById("schedule");
@@ -150,24 +182,29 @@
 
   function renderSchedule() {
     scheduleDiv.innerHTML = "";
-    days.forEach((day, i) => {
+    days.forEach((dayName, i) => {
+      const dayKey = dayKeys[i];
       const dayDiv = document.createElement("div");
       dayDiv.classList.add("dayColumn", dayClasses[i]);
 
       const header = document.createElement("div");
       header.classList.add("dayHeader");
-      header.textContent = day;
+      header.textContent = dayName;
       dayDiv.appendChild(header);
 
       // Buổi sáng
       const morningDiv = document.createElement("div");
       morningDiv.classList.add("morning");
-      morningDiv.innerHTML = "<strong>Sáng</strong>";
-      scheduleData.schedule[day].morning.forEach((subject, idx) => {
+      const mornTitle = document.createElement("div");
+      mornTitle.classList.add("sessionTitle");
+      mornTitle.textContent = "Sáng";
+      morningDiv.appendChild(mornTitle);
+
+      scheduleData.schedule[dayKey].morning.forEach((subject, idx) => {
         const p = document.createElement("div");
         p.classList.add("period");
         if (isAdmin) p.classList.add("editable");
-        p.dataset.day = day;
+        p.dataset.day = dayKey;
         p.dataset.session = "morning";
         p.dataset.index = idx;
         p.textContent = subject;
@@ -179,12 +216,16 @@
       // Buổi chiều
       const afternoonDiv = document.createElement("div");
       afternoonDiv.classList.add("afternoon");
-      afternoonDiv.innerHTML = "<strong>Chiều</strong>";
-      scheduleData.schedule[day].afternoon.forEach((subject, idx) => {
+      const aftTitle = document.createElement("div");
+      aftTitle.classList.add("sessionTitle");
+      aftTitle.textContent = "Chiều";
+      afternoonDiv.appendChild(aftTitle);
+
+      scheduleData.schedule[dayKey].afternoon.forEach((subject, idx) => {
         const p = document.createElement("div");
         p.classList.add("period");
         if (isAdmin) p.classList.add("editable");
-        p.dataset.day = day;
+        p.dataset.day = dayKey;
         p.dataset.session = "afternoon";
         p.dataset.index = idx;
         p.textContent = subject;
