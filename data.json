@@ -1,1 +1,30 @@
+{
+  "lastUpdated": "2025-08-10T08:00:00Z",
+  "schedule": {
+    "Monday": {
+      "morning": ["Toán", "Văn", "Anh", "Lý", "Hóa"],
+      "afternoon": ["Sử", "Địa", "Công nghệ", "GDCD", "Thể dục"]
+    },
+    "Tuesday": {
+      "morning": ["Văn", "Toán", "Anh", "Sinh", "Lý"],
+      "afternoon": ["Hóa", "Sử", "Địa", "Tin", "Âm nhạc"]
+    },
+    "Wednesday": {
+      "morning": ["Toán", "Văn", "Anh", "Lý", "Hóa"],
+      "afternoon": ["Sử", "Địa", "Công nghệ", "GDCD", "Thể dục"]
+    },
+    "Thursday": {
+      "morning": ["Văn", "Toán", "Anh", "Sinh", "Lý"],
+      "afternoon": ["Hóa", "Sử", "Địa", "Tin", "Âm nhạc"]
+    },
+    "Friday": {
+      "morning": ["Toán", "Văn", "Anh", "Lý", "Hóa"],
+      "afternoon": ["Sử", "Địa", "Công nghệ", "GDCD", "Thể dục"]
+    },
+    "Saturday": {
+      "morning": ["Văn", "Toán", "Anh", "Sinh", "Lý"],
+      "afternoon": ["Hóa", "Sử", "Địa", "Tin", "Âm nhạc"]
+    }
+  }
+}
 
