@@ -4,18 +4,24 @@
 <meta charset="UTF-8" />
 <title>Thời khóa biểu Lớp 8A9</title>
 <style>
-  body { font-family: Arial; padding: 10px; }
+  body { font-family: Arial; padding: 10px; max-width: 800px; margin: auto; }
   h1 { text-align: center; }
-  table { border-collapse: collapse; width: 100%; }
+  table { border-collapse: collapse; width: 100%; margin-top: 10px; }
   th, td { border: 1px solid #ccc; padding: 8px; text-align: center; }
   th { background-color: #333; color: white; }
   .morning { background-color: #e0f7fa; }
   .afternoon { background-color: #ffe0b2; }
+  #loginSection, #editSection { margin-top: 20px; }
+  #editSection { display: none; }
+  textarea { width: 100%; height: 100px; }
+  button { padding: 8px 12px; margin-top: 5px; }
 </style>
 </head>
 <body>
+
 <h1>Thời khóa biểu Lớp 8A9</h1>
 <div id="lastUpdated"></div>
+
 <table id="scheduleTable">
   <thead>
     <tr>
@@ -50,31 +56,99 @@
   </tbody>
 </table>
 
+<div id="loginSection">
+  <h3>Đăng nhập Admin</h3>
+  <input type="password" id="passwordInput" placeholder="Nhập mật khẩu admin" />
+  <button onclick="login()">Đăng nhập</button>
+  <div id="loginMsg" style="color:red;"></div>
+</div>
+
+<div id="editSection">
+  <h3>Chỉnh sửa thời khóa biểu (định dạng JSON)</h3>
+  <textarea id="editArea"></textarea><br />
+  <button onclick="saveChanges()">Lưu thay đổi</button>
+  <div id="saveMsg" style="color:green;"></div>
+</div>
+
 <script>
-  const rawURL = "https://raw.githubusercontent.com/ductrong49/8a9/main/data.json";
+  const apiBase = "http://localhost:3000/api";
+  let loggedIn = false;
+  let scheduleData = null;
 
   async function loadSchedule() {
     try {
-      const res = await fetch(rawURL);
-      const data = await res.json();
+      const res = await fetch(`${apiBase}/data`);
+      if (!res.ok) throw new Error("Không tải được dữ liệu");
+      scheduleData = await res.json();
 
-      document.getElementById("lastUpdated").textContent = "Cập nhật lần cuối: " + new Date(data.lastUpdated).toLocaleString("vi-VN");
+      document.getElementById("lastUpdated").textContent =
+        "Cập nhật lần cuối: " + new Date(scheduleData.lastUpdated).toLocaleString("vi-VN");
 
       const days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
       const morningCells = document.querySelectorAll("td.morning");
       const afternoonCells = document.querySelectorAll("td.afternoon");
 
       days.forEach((day, i) => {
-        morningCells[i].textContent = data.schedule[day].morning.join(", ");
-        afternoonCells[i].textContent = data.schedule[day].afternoon.join(", ");
+        morningCells[i].textContent = scheduleData.schedule[day].morning.join(", ");
+        afternoonCells[i].textContent = scheduleData.schedule[day].afternoon.join(", ");
+      });
+    } catch (e) {
+      alert("Lỗi tải thời khóa biểu: " + e.message);
+    }
+  }
+
+  async function login() {
+    const password = document.getElementById("passwordInput").value;
+    const loginMsg = document.getElementById("loginMsg");
+    loginMsg.textContent = "";
+
+    try {
+      const res = await fetch(`${apiBase}/login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ password }),
+      });
+      if (!res.ok) throw new Error("Mật khẩu sai");
+      loggedIn = true;
+      document.getElementById("loginSection").style.display = "none";
+      document.getElementById("editSection").style.display = "block";
+      document.getElementById("editArea").value = JSON.stringify(scheduleData, null, 2);
+    } catch (e) {
+      loginMsg.textContent = e.message;
+    }
+  }
+
+  async function saveChanges() {
+    const saveMsg = document.getElementById("saveMsg");
+    saveMsg.style.color = "green";
+    saveMsg.textContent = "";
+
+    try {
+      const newContent = JSON.parse(document.getElementById("editArea").value);
+      const password = document.getElementById("passwordInput").value;
+
+      const res = await fetch(`${apiBase}/update`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ password, content: newContent }),
       });
 
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.message || "Lỗi cập nhật");
+      }
+
+      saveMsg.textContent = "Cập nhật thành công!";
+      scheduleData = newContent;
+      loadSchedule();
     } catch (e) {
-      alert("Lỗi tải dữ liệu thời khóa biểu: " + e.message);
+      saveMsg.style.color = "red";
+      saveMsg.textContent = "Lỗi: " + e.message;
     }
   }
 
   loadSchedule();
 </script>
+
 </body>
 </html>
