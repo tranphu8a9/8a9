@@ -1,225 +1,274 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-<meta charset="UTF-8" />
-<title>Thời khóa biểu Lớp 8A9</title>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>THỜI KHÓA BIỂU LỚP 8A9</title>
 <style>
-  body {
-    font-family: Arial, sans-serif;
-    max-width: 900px;
-    margin: 20px auto;
-    padding: 0 10px;
-    background-image: url('background.jpg'); /* Thay bằng link ảnh nền */
-    background-size: cover;
-    background-position: center;
-    background-attachment: fixed;
-  }
-  h1 {
-    color: #1e3a8a;
-    text-align: center;
-    margin-bottom: 15px;
-    background-color: rgba(200, 200, 200, 0.7); /* xám nhạt mờ */
-    padding: 8px;
-    border-radius: 8px;
-  }
-  #weekInfo {
-    text-align: center;
-    font-weight: bold;
-    margin-bottom: 10px;
-    font-size: 1.1em;
-    color: #1e3a8a;
-    background-color: rgba(200, 200, 200, 0.7);
-    padding: 8px;
-    border-radius: 8px;
-  }
-  #lastUpdated {
-    text-align: center;
-    margin-bottom: 20px;
-    font-style: italic;
-    background-color: rgba(200, 200, 200, 0.7);
-    padding: 8px;
-    border-radius: 8px;
-  }
-  table {
-    width: 100%;
-    border-collapse: collapse;
-  }
-  th {
-    background-color: #0b6623; /* xanh lá đậm */
-    color: green;
-    padding: 8px;
-    text-align: center;
-  }
-  td {
-    border: 1px solid #ccc;
-    padding: 6px 8px;
-    text-align: center;
-    background-color: white; /* trắng cho ô không màu */
+  /* Căn giữa chữ trong các ô môn học (các cột từ thứ 2 đến thứ 7) */
+tbody td:nth-child(n+2) {
+  text-align: center;
+}
+
+  :root{
+    --col-2: #cfefff; /* Thứ 2 */
+    --col-3: #dfffe9; /* Thứ 3 */
+    --col-4: #fff4d6; /* Thứ 4 */
+    --col-5: #ffe9ea; /* Thứ 5 */
+    --col-6: #f3eeff; /* Thứ 6 */
+    --col-7: #fff0f7; /* Thứ 7 */
+
+    --head-2: #6bb5ff;
+    --head-3: #78e8c6;
+    --head-4: #fbc971;
+    --head-5: #ffa1a1;
+    --head-6: #bfa8ff;
+    --head-7: #ffb6e0;
   }
 
-  /* Màu nền khác nhau cho từng thứ */
-  .thu2 { background-color: #d0f0fd; }
-  .thu3 { background-color: #d0fde4; }
-  .thu4 { background-color: #fdf7d0; }
-  .thu5 { background-color: #fde0d0; }
-  .thu6 { background-color: #e9d0fd; }
-  .thu7 { background-color: #f0d0d0; }
-
-  /* Tiêu đề buổi học */
-  .session-title {
-    font-weight: bold;
-    text-align: left;
-    font-size: 1.1em;
-    border-top: 2px solid #ccc;
-    border-bottom: 2px solid #ccc;
-    padding: 2px 8px;
-    margin: 0;
-    background-color: white;
+  html,body{height:100%;margin:0;}
+  body{
+    font-family: "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    background: url('background.jpg') center/cover no-repeat fixed;
   }
 
-  .morning-title {
-    color: #1e3a8a;
-  }
-  .afternoon-title {
-    color: #8b4513;
-  }
-  .morning {
-    font-weight: bold;
-  }
-  .afternoon {
-    font-weight: bold;
+  .wrap{
+    max-width:1100px;
+    margin:28px auto;
+    background: rgba(255,255,255,0.92);
+    border-radius:12px;
+    padding:18px;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.15);
   }
 
-  /* Dòng giáo viên chủ nhiệm */
-  #homeroomTeacher {
-    text-align: center;
-    margin-top: 20px;
-    font-weight: bold;
-    color: #1e3a8a;
-    background-color: rgba(200, 200, 200, 0.7);
-    padding: 8px;
-    border-radius: 8px;
+  header{
+    text-align:center;
+    margin-bottom:14px;
+  }
+  h1{
+    margin:6px 0 4px;
+    font-size:28px;
+    letter-spacing:1px;
+    color:#113;
+  }
+  .meta{
+    font-size:14px;
+    color:#444;
+    margin-bottom:12px;
+  }
+
+  .meta .teacher{font-weight:700; color:#0b3553;}
+  .meta .tel{margin-left:10px;color:#0b3553;}
+  
+  table{
+    width:100%;
+    border-collapse:collapse;
+    background:transparent;
+    overflow:hidden;
+    border-radius:8px;
+  }
+  thead th{
+    padding:10px 8px;
+    color:#fff;
+    font-size:14px;
+    text-align:center;
+  }
+  thead th:first-child{ background:transparent; color:#333; text-align:left; padding-left:14px; font-weight:700; }
+
+  /* header colors */
+  thead th:nth-child(2){ background:var(--head-2); }
+  thead th:nth-child(3){ background:var(--head-3); }
+  thead th:nth-child(4){ background:var(--head-4); color:#111; }
+  thead th:nth-child(5){ background:var(--head-5); color:#111; }
+  thead th:nth-child(6){ background:var(--head-6); }
+  thead th:nth-child(7){ background:var(--head-7); color:#111; }
+
+  td{ padding:10px 8px; border:1px solid rgba(0,0,0,0.06); vertical-align:middle; font-size:14px; }
+  tbody td:first-child{ text-align:center; font-weight:600; background:#fafafa; width:88px; }
+
+  /* column backgrounds (content) */
+  tbody td:nth-child(2){ background:var(--col-2); }
+  tbody td:nth-child(3){ background:var(--col-3); }
+  tbody td:nth-child(4){ background:var(--col-4); }
+  tbody td:nth-child(5){ background:var(--col-5); }
+  tbody td:nth-child(6){ background:var(--col-6); }
+  tbody td:nth-child(7){ background:var(--col-7); }
+
+  /* session titles */
+  .session-row td{
+    background:#eef3f7;
+    text-align:center;
+    font-weight:700;
+    padding-left:12px;
+    color:#333;
+    border-top:2px solid rgba(0,0,0,0.04);
+  }
+
+  /* morning and afternoon text colors */
+  .morning td:not(.session-td) { color:#0066CC; font-weight:600; }
+  .afternoon td:not(.session-td) { color:#8B4513; font-weight:600; }
+
+  /* small note when empty */
+  .empty { color: #8a8a8a; font-weight:500; }
+
+  /* responsive */
+  @media (max-width:820px){
+  .wrap {
+    padding: 12px;
+    margin: 12px 10px;
+  }
+  thead th, td {
+    font-size: 12px;
+    padding: 6px 5px;
+  }
+  tbody td:first-child {
+    width: 50px;
+    font-size: 13px;
+  }
+  .session-row td {
+    font-size: 14px;
+    padding-left: 0;
+  }
+  header h1 {
+    font-size: 22px;
+    margin: 8px 0 8px;
+  }
+  .meta {
+    font-size: 12px;
+  }
+  #info-date, #status {
+    font-size: 13px;
+  }
+}
+
   }
 </style>
 </head>
 <body>
+  <div class="wrap">
+    <header>
+      <h1>THỜI KHÓA BIỂU LỚP 8A9</h1>
+      <div class="meta">
+        Giáo viên chủ nhiệm: <span class="teacher">NGUYỄN THỊ A</span>
+        <span class="tel">SĐT: 0912345678</span>
+      </div>
+    </header>
 
-<h1>THỜI KHÓA BIỂU LỚP 8A9</h1>
+    <div id="table-wrap">
+      <table id="tkb">
+        <thead>
+          <tr>
+            <th>Tiết</th>
+            <th>Thứ 2</th>
+            <th>Thứ 3</th>
+            <th>Thứ 4</th>
+            <th>Thứ 5</th>
+            <th>Thứ 6</th>
+            <th>Thứ 7</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- Buổi sáng -->
+          <tr class="session-row"><td class="session-td" colspan="7">Buổi Sáng</td></tr>
+          <tr class="morning"><td>Tiết 1</td><td data-pos="B3"></td><td data-pos="C3"></td><td data-pos="D3"></td><td data-pos="E3"></td><td data-pos="F3"></td><td data-pos="G3"></td></tr>
+          <tr class="morning"><td>Tiết 2</td><td data-pos="B4"></td><td data-pos="C4"></td><td data-pos="D4"></td><td data-pos="E4"></td><td data-pos="F4"></td><td data-pos="G4"></td></tr>
+          <tr class="morning"><td>Tiết 3</td><td data-pos="B5"></td><td data-pos="C5"></td><td data-pos="D5"></td><td data-pos="E5"></td><td data-pos="F5"></td><td data-pos="G5"></td></tr>
+          <tr class="morning"><td>Tiết 4</td><td data-pos="B6"></td><td data-pos="C6"></td><td data-pos="D6"></td><td data-pos="E6"></td><td data-pos="F6"></td><td data-pos="G6"></td></tr>
+          <tr class="morning"><td>Tiết 5</td><td data-pos="B7"></td><td data-pos="C7"></td><td data-pos="D7"></td><td data-pos="E7"></td><td data-pos="F7"></td><td data-pos="G7"></td></tr>
 
-<div id="weekInfo"></div>
+          <!-- Buổi chiều -->
+          <tr class="session-row"><td class="session-td" colspan="7">Buổi Chiều</td></tr>
+          <tr class="afternoon"><td>Tiết 1</td><td data-pos="B9"></td><td data-pos="C9"></td><td data-pos="D9"></td><td data-pos="E9"></td><td data-pos="F9"></td><td data-pos="G9"></td></tr>
+          <tr class="afternoon"><td>Tiết 2</td><td data-pos="B10"></td><td data-pos="C10"></td><td data-pos="D10"></td><td data-pos="E10"></td><td data-pos="F10"></td><td data-pos="G10"></td></tr>
+          <tr class="afternoon"><td>Tiết 3</td><td data-pos="B11"></td><td data-pos="C11"></td><td data-pos="D11"></td><td data-pos="E11"></td><td data-pos="F11"></td><td data-pos="G11"></td></tr>
+          <tr class="afternoon"><td>Tiết 4</td><td data-pos="B12"></td><td data-pos="C12"></td><td data-pos="D12"></td><td data-pos="E12"></td><td data-pos="F12"></td><td data-pos="G12"></td></tr>
+          <tr class="afternoon"><td>Tiết 5</td><td data-pos="B13"></td><td data-pos="C13"></td><td data-pos="D13"></td><td data-pos="E13"></td><td data-pos="F13"></td><td data-pos="G13"></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div id="status" style="margin-top:12px; color:#666; font-size:13px; text-align:right;"></div>
 
-<div id="lastUpdated"></div>
-
-<table>
-  <thead>
-    <tr>
-      <th>Buổi / Tiết</th>
-      <th class="thu2">Thứ 2</th>
-      <th class="thu3">Thứ 3</th>
-      <th class="thu4">Thứ 4</th>
-      <th class="thu5">Thứ 5</th>
-      <th class="thu6">Thứ 6</th>
-      <th class="thu7">Thứ 7</th>
-    </tr>
-  </thead>
-  <tbody id="scheduleBody">
-    <!-- Dữ liệu sẽ được chèn ở đây -->
-  </tbody>
-</table>
-
-<div id="homeroomTeacher">
-  Giáo viên chủ nhiệm: Nguyễn Thị A - SĐT: 0912345678
-</div>
+    <!-- Hiển thị ngày hiện tại & số tuần -->
+    <div id="info-date" style="margin-top:14px; font-size:15px; color:#333; text-align:right; font-weight:600;"></div>
+  </div>
 
 <script>
-const dataUrl = "https://raw.githubusercontent.com/ductrong49/8a9/main/data.json";
-const days = ["Thứ 2", "Thứ 3", "Thứ 4", "Thứ 5", "Thứ 6", "Thứ 7"];
-const classes = ["thu2", "thu3", "thu4", "thu5", "thu6", "thu7"];
+(async function(){
+  const EXEC_URL = "https://script.google.com/macros/s/AKfycbzTElxNBgS5_ZhoFR-JxRtUKUeGox70eh3p_Z9O6p9XZmm1YYJD3KhaCbGYojqVtPOx/exec";
 
-// Tính tuần học hoặc đếm ngày
-function updateWeekInfo() {
-  const startDate = new Date("2025-09-08T00:00:00");
-  const now = new Date();
-  const diffMs = now - startDate;
-  const weekInfoDiv = document.getElementById("weekInfo");
-
-  if(diffMs < 0) {
-    const diffDays = Math.ceil(Math.abs(diffMs) / (1000 * 60 * 60 * 24));
-    weekInfoDiv.textContent = `Còn ${diffDays} ngày đến tuần học bắt đầu (08/09/2025)`;
-  } else {
-    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-    const weekNumber = Math.floor(diffDays / 7) + 1;
-    weekInfoDiv.textContent = `Tuần học hiện tại: Tuần ${weekNumber}`;
+  // Utility: convert A1 like "B3" to zero-based row/col indexes
+  function a1ToIdx(a1){
+    const colLetters = a1.match(/^[A-Z]+/)[0];
+    const row = parseInt(a1.match(/\d+$/)[0],10) - 1;
+    // convert letters to 0-based index
+    let col = 0;
+    for (let i=0;i<colLetters.length;i++){
+      col = col * 26 + (colLetters.charCodeAt(i) - 65 + 1);
+    }
+    return { r: row, c: col - 1 };
   }
+
+  // fetch sheet JSON (Apps Script doGet should return array-of-rows)
+  try {
+    const res = await fetch(EXEC_URL + "?_=" + Date.now(), { cache: "no-store" });
+    if (!res.ok) throw new Error("HTTP " + res.status);
+    const sheet = await res.json(); // expected: 2D array like data[row][col]
+
+    // fill cells by data-pos attributes
+    document.querySelectorAll("[data-pos]").forEach(td => {
+      const a1 = td.getAttribute("data-pos");
+      const {r,c} = a1ToIdx(a1);
+      let text = "";
+      if (sheet && Array.isArray(sheet[r]) && sheet[r][c] != null && sheet[r][c] !== "") {
+        text = sheet[r][c];
+      } else {
+        text = ""; // empty
+      }
+      // If cell contains newline or " - " show on two lines
+      td.innerHTML = text ? text.toString().replace(/\n/g,"<br>") : '<span class="empty">—</span>';
+    });
+
+    document.getElementById("status").textContent = "Dữ liệu được lấy từ App VNEdu";
+  } catch (err) {
+    console.error(err);
+    document.getElementById("status").textContent = "Không thể tải dữ liệu: " + err.message;
+    // keep placeholders visible
+    document.querySelectorAll("[data-pos]").forEach(td=>{
+      if (!td.innerHTML) td.innerHTML = '<span class="empty">—</span>';
+    });
+  }
+})();
+
+// Hàm định dạng ngày tháng tiếng Việt, ví dụ: Thứ Hai, 11 tháng 8 năm 2025
+function formatVietnameseDate(date) {
+  const days = ['Chủ Nhật', 'Thứ Hai', 'Thứ Ba', 'Thứ Tư', 'Thứ Năm', 'Thứ Sáu', 'Thứ Bảy'];
+  const dayName = days[date.getDay()];
+  const d = date.getDate();
+  const m = date.getMonth() + 1;
+  const y = date.getFullYear();
+  return `${dayName}, ${d} tháng ${m} năm ${y}`;
 }
-updateWeekInfo();
 
-// Lấy dữ liệu từ file JSON
-fetch(dataUrl)
-  .then(res => res.json())
-  .then(data => {
-    const lastUpdated = new Date(data.lastUpdated);
-    document.getElementById("lastUpdated").textContent =
-      "Cập nhật lần cuối: " + (isNaN(lastUpdated) ? "Không rõ" : lastUpdated.toLocaleString("vi-VN"));
+// Hàm tính số tuần bắt đầu từ ngày 8/9/2025
+function getWeekNumber(date) {
+  const startDate = new Date(2025, 8, 8); // tháng 8 là tháng 9 (0-based)
+  const diffMs = date - startDate;
+  if(diffMs < 0) return 0; // chưa đến tuần 1
+  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+  return Math.floor(diffDays / 7) + 1;
+}
 
-    const tbody = document.getElementById("scheduleBody");
-    const morningPeriods = 5;
-    const afternoonPeriods = 5;
-
-    // Buổi sáng
-    let trSessionMorning = document.createElement("tr");
-    let tdSessionMorning = document.createElement("td");
-    tdSessionMorning.colSpan = 7;
-    tdSessionMorning.textContent = "Buổi Sáng";
-    tdSessionMorning.classList.add("session-title", "morning-title");
-    trSessionMorning.appendChild(tdSessionMorning);
-    tbody.appendChild(trSessionMorning);
-
-    for(let i=0; i<morningPeriods; i++) {
-      const tr = document.createElement("tr");
-      const tdBuoiTiet = document.createElement("td");
-      tdBuoiTiet.textContent = `Tiết ${i+1}`;
-      tdBuoiTiet.classList.add("morning");
-      tr.appendChild(tdBuoiTiet);
-
-      for(let d=0; d<days.length; d++) {
-        const td = document.createElement("td");
-        td.classList.add(classes[d]);
-        const mon = data.schedule[days[d]]?.morning?.[i] || "";
-        td.textContent = mon;
-        tr.appendChild(td);
-      }
-      tbody.appendChild(tr);
-    }
-
-    // Buổi chiều
-    let trSessionAfternoon = document.createElement("tr");
-    let tdSessionAfternoon = document.createElement("td");
-    tdSessionAfternoon.colSpan = 7;
-    tdSessionAfternoon.textContent = "Buổi Chiều";
-    tdSessionAfternoon.classList.add("session-title", "afternoon-title");
-    trSessionAfternoon.appendChild(tdSessionAfternoon);
-    tbody.appendChild(trSessionAfternoon);
-
-    for(let i=0; i<afternoonPeriods; i++) {
-      const tr = document.createElement("tr");
-      const tdBuoiTiet = document.createElement("td");
-      tdBuoiTiet.textContent = `Tiết ${i+1}`;
-      tdBuoiTiet.classList.add("afternoon");
-      tr.appendChild(tdBuoiTiet);
-
-      for(let d=0; d<days.length; d++) {
-        const td = document.createElement("td");
-        td.classList.add(classes[d]);
-        const mon = data.schedule[days[d]]?.afternoon?.[i] || "";
-        td.textContent = mon;
-        tr.appendChild(td);
-      }
-      tbody.appendChild(tr);
-    }
-  })
-  .catch(() => alert("Không tải được dữ liệu thời khóa biểu!"));
+(function(){
+  const now = new Date();
+  const formattedDate = formatVietnameseDate(now);
+  const weekNum = getWeekNumber(now);
+  const infoEl = document.getElementById("info-date");
+  if(weekNum > 0) {
+    infoEl.textContent = `Hôm nay là ${formattedDate} — Tuần học thứ ${weekNum}`;
+  } else {
+    infoEl.textContent = `Hôm nay là ${formattedDate} — Chưa đến tuần học thứ 1 (bắt đầu từ 8/9/2025)`;
+  }
+})();
 </script>
-
 </body>
 </html>
