@@ -3,116 +3,108 @@
 <head>
   <meta charset="UTF-8">
   <title>Thời khóa biểu</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
-    body { font-family: Arial, sans-serif; background: #f9f9f9; padding: 20px; }
+    body { font-family: Arial, sans-serif; padding: 20px; background: #f5f5f5; }
     h1 { text-align: center; color: #333; }
-    #datetime { text-align: center; margin-bottom: 20px; font-weight: bold; }
-    .container { display: flex; gap: 20px; justify-content: center; }
-    table { border-collapse: collapse; width: 100%; background: white; }
+    .datetime { text-align: center; margin-bottom: 20px; font-weight: bold; color: #0066cc; }
+    table { width: 100%; border-collapse: collapse; margin-bottom: 30px; background: white; }
     th, td { border: 1px solid #ccc; padding: 8px; text-align: center; }
-    th { background: #4a90e2; color: white; }
+    th { background: #0066cc; color: white; }
     td { cursor: pointer; }
-    td:hover { background: #e0f7fa; }
-    .status { margin-top: 20px; text-align: center; font-size: 18px; color: #d9534f; }
-    .popup {
-      display: none; position: fixed; top: 50%; left: 50%;
-      transform: translate(-50%, -50%); background: white;
-      padding: 20px; border: 2px solid #333; border-radius: 10px;
-      box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-    }
-    .popup button { margin-top: 10px; }
+    td:hover { background: #e0f0ff; }
+    .section-title { margin: 20px 0 10px; font-size: 20px; color: #0066cc; font-weight: bold; }
   </style>
 </head>
 <body>
-  <h1>Thời khóa biểu</h1>
-  <div id="datetime"></div>
-  <div class="container">
-    <div>
-      <h2>Buổi sáng</h2>
-      <table id="morning"></table>
-    </div>
-    <div>
-      <h2>Buổi chiều</h2>
-      <table id="afternoon"></table>
-    </div>
-  </div>
-  <div class="status" id="status"></div>
+  <h1>THỜI KHÓA BIỂU</h1>
+  <div class="datetime" id="datetime"></div>
 
-  <div class="popup" id="popup">
-    <div id="popupContent"></div>
-    <button onclick="closePopup()">Đóng</button>
-  </div>
+  <div class="section-title">BUỔI SÁNG</div>
+  <table>
+    <thead>
+      <tr>
+        <th>Tiết</th>
+        <th>Thứ 2</th>
+        <th>Thứ 3</th>
+        <th>Thứ 4</th>
+        <th>Thứ 5</th>
+        <th>Thứ 6</th>
+        <th>Thứ 7</th>
+      </tr>
+    </thead>
+    <tbody id="morning"></tbody>
+  </table>
+
+  <div class="section-title">BUỔI CHIỀU</div>
+  <table>
+    <thead>
+      <tr>
+        <th>Tiết</th>
+        <th>Thứ 2</th>
+        <th>Thứ 3</th>
+        <th>Thứ 4</th>
+        <th>Thứ 5</th>
+        <th>Thứ 6</th>
+        <th>Thứ 7</th>
+      </tr>
+    </thead>
+    <tbody id="afternoon"></tbody>
+  </table>
 
   <script>
-    const API_URL = "https://script.google.com/macros/s/AKfycbz04IeeS7Bw93cX2hWDwYX76VrHtb2ExNEQ0_4fx24hLDQcLCJSewTV13h-UUlGQh9p/exec";
+  const API_URL = "https://script.google.com/macros/s/AKfycbz04IeeS7Bw93cX2hWDwYX76VrHtb2ExNEQ0_4fx24hLDQcLCJSewTV13h-UUlGQh9p/exec";
 
-    async function fetchData() {
-      const res = await fetch(API_URL);
-      const data = await res.json();
-      renderTimetable(data);
-      checkCurrentLesson(data);
-    }
+  async function loadData() {
+    try {
+      let res = await fetch(API_URL);
+      let data = await res.json();
+      let { subjects, periods } = data;
 
-    function renderTimetable(data) {
-      const morning = document.getElementById("morning");
-      const afternoon = document.getElementById("afternoon");
+      let tableMorning = document.getElementById("morning");
+      let tableAfternoon = document.getElementById("afternoon");
 
-      // Header
-      let header = "<tr><th>Tiết</th><th>Thứ 2</th><th>Thứ 3</th><th>Thứ 4</th><th>Thứ 5</th><th>Thứ 6</th><th>Thứ 7</th></tr>";
-      morning.innerHTML = header;
-      afternoon.innerHTML = header;
+      for (let pid in subjects) {
+        let row = document.createElement("tr");
+        let firstCell = document.createElement("td");
+        firstCell.textContent = periods[pid] ? periods[pid].name : pid;
+        row.appendChild(firstCell);
 
-      data.tkb.forEach(row => {
-        let rowHtml = `<tr><td>${row["Buổi / Tiết"]}</td>`;
-        for (let i = 2; i <= 7; i++) {
-          let subject = row[`THỨ ${i}`] || "";
-          rowHtml += `<td onclick="showPopup('${subject}', '${row["Mã tiết"]}')">${subject}</td>`;
-        }
-        rowHtml += "</tr>";
-        if (row["Mã tiết"].startsWith("s")) morning.innerHTML += rowHtml;
-        else afternoon.innerHTML += rowHtml;
-      });
-    }
+        ["THỨ 2","THỨ 3","THỨ 4","THỨ 5","THỨ 6","THỨ 7"].forEach(day=>{
+          let cell = document.createElement("td");
+          cell.textContent = subjects[pid][day] || "";
+          if(cell.textContent){
+            cell.onclick = ()=>showPopup(pid, subjects[pid][day], periods);
+          }
+          row.appendChild(cell);
+        });
 
-    function showPopup(subject, code) {
-      if (!subject) return;
-      fetch(API_URL).then(res => res.json()).then(data => {
-        let tiet = data.tiet[code];
-        if (tiet) {
-          document.getElementById("popupContent").innerHTML =
-            `<b>${subject}</b><br>Giờ học: ${tiet.start} - ${tiet.end}`;
-          document.getElementById("popup").style.display = "block";
-        }
-      });
-    }
-
-    function closePopup() {
-      document.getElementById("popup").style.display = "none";
-    }
-
-    function checkCurrentLesson(data) {
-      const now = new Date();
-      const currentTime = now.getHours() + ":" + now.getMinutes();
-      let status = "Đang ngoài giờ học";
-
-      for (let code in data.tiet) {
-        let { ten, start, end } = data.tiet[code];
-        if (currentTime >= start && currentTime <= end) {
-          status = `Hiện tại đang học: ${ten} (${code})`;
-        }
+        if(pid.startsWith("s")) tableMorning.appendChild(row);
+        else tableAfternoon.appendChild(row);
       }
-      document.getElementById("status").innerText = status;
+    } catch (e) {
+      console.error("Không lấy được dữ liệu:", e);
     }
+  }
 
-    function updateClock() {
-      const now = new Date();
-      document.getElementById("datetime").innerText =
-        now.toLocaleDateString("vi-VN") + " " + now.toLocaleTimeString("vi-VN");
-    }
+  function showPopup(pid, subject, periods){
+    if(!subject) return;
+    let p = periods[pid];
+    if(!p) return;
+    alert(`Môn học: ${subject}\nTiết: ${p.name}\nThời gian: ${p.start} - ${p.end}`);
+  }
 
-    setInterval(updateClock, 1000);
-    updateClock();
-    fetchData();
+  // Hiển thị ngày giờ hiện tại
+  function updateDateTime(){
+    let now = new Date();
+    let options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
+                    hour: '2-digit', minute: '2-digit', second: '2-digit' };
+    document.getElementById("datetime").textContent = now.toLocaleDateString("vi-VN", options);
+  }
+  setInterval(updateDateTime, 1000);
+  updateDateTime();
+
+  loadData();
   </script>
 </body>
 </html>
