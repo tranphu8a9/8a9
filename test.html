@@ -3,30 +3,53 @@
 <head>
   <meta charset="UTF-8">
   <title>Thời khóa biểu</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
-    body { font-family: Arial, sans-serif; background: #f9f9f9; margin: 20px; }
+    body { font-family: Arial, sans-serif; background: #f5f5f5; padding: 20px; }
     h1 { text-align: center; color: #333; }
-    #now { text-align: center; font-size: 18px; margin: 15px; font-weight: bold; color: #0077cc; }
-    table { width: 100%; border-collapse: collapse; margin-bottom: 25px; }
-    th, td { border: 1px solid #ccc; padding: 8px; text-align: center; }
-    th { background: #0077cc; color: #fff; }
-    .morning { background: #e0f7fa; }
-    .afternoon { background: #fff9c4; }
-    td.clickable { cursor: pointer; color: #0077cc; font-weight: bold; }
-    td.clickable:hover { background: #d0ebff; }
-    #popup { display:none; position:fixed; top:50%; left:50%; transform:translate(-50%, -50%);
-             background:#fff; border:2px solid #0077cc; padding:20px; border-radius:10px; 
-             box-shadow:0 0 10px rgba(0,0,0,0.3); }
-    #popup button { margin-top:10px; padding:5px 10px; background:#0077cc; color:#fff; border:none; border-radius:5px; }
+    #datetime { text-align: center; font-weight: bold; margin-bottom: 15px; }
+    .container { display: flex; justify-content: space-around; }
+    table { border-collapse: collapse; margin: 10px; background: #fff; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+    th, td { border: 1px solid #ccc; padding: 8px 12px; text-align: center; }
+    th { background: #4CAF50; color: #fff; }
+    td { cursor: pointer; }
+    td:hover { background: #e0f7fa; }
+    .morning th { background: #42a5f5; }
+    .afternoon th { background: #ab47bc; }
+    #current { margin: 20px auto; text-align: center; font-size: 18px; font-weight: bold; color: #d32f2f; }
+    #popup {
+      display: none;
+      position: fixed; top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      background: white; padding: 20px;
+      border: 2px solid #333; border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.5);
+    }
+    #popup button { margin-top: 10px; padding: 5px 10px; }
   </style>
 </head>
 <body>
-  <h1>📚 Thời khóa biểu</h1>
-  <div id="now">Đang tải...</div>
-  <h2>Buổi sáng</h2>
-  <table id="morning"></table>
-  <h2>Buổi chiều</h2>
-  <table id="afternoon"></table>
+  <h1>Thời khóa biểu</h1>
+  <div id="datetime"></div>
+  <div id="current">Đang kiểm tra...</div>
+
+  <div class="container">
+    <table class="morning">
+      <thead>
+        <tr><th colspan="8">Buổi sáng</th></tr>
+        <tr><th>Mã tiết</th><th>Buổi/Tiết</th><th>Thứ 2</th><th>Thứ 3</th><th>Thứ 4</th><th>Thứ 5</th><th>Thứ 6</th><th>Thứ 7</th></tr>
+      </thead>
+      <tbody id="morning-body"></tbody>
+    </table>
+
+    <table class="afternoon">
+      <thead>
+        <tr><th colspan="8">Buổi chiều</th></tr>
+        <tr><th>Mã tiết</th><th>Buổi/Tiết</th><th>Thứ 2</th><th>Thứ 3</th><th>Thứ 4</th><th>Thứ 5</th><th>Thứ 6</th><th>Thứ 7</th></tr>
+      </thead>
+      <tbody id="afternoon-body"></tbody>
+    </table>
+  </div>
 
   <div id="popup">
     <div id="popup-content"></div>
@@ -34,86 +57,101 @@
   </div>
 
   <script>
-    const url = "https://script.google.com/macros/s/AKfycbz04IeeS7Bw93cX2hWDwYX76VrHtb2ExNEQ0_4fx24hLDQcLCJSewTV13h-UUlGQh9p/exec";
+    const url = "YOUR_SCRIPT_URL_HERE"; // thay bằng link web app
+
+    let timetable = [];
+    let periods = {};
 
     async function loadData() {
       const res = await fetch(url);
       const data = await res.json();
-      buildTable(data.sheet1, data.sheet2);
-      showNow(data.sheet1, data.sheet2);
-      setInterval(() => showNow(data.sheet1, data.sheet2), 60000); // cập nhật mỗi phút
+      timetable = data.sheet1;
+      const sheet2 = data.sheet2;
+
+      // map periods
+      for (let i = 1; i < sheet2.length; i++) {
+        let row = sheet2[i];
+        periods[row[0]] = { name: row[1], start: row[2], end: row[3] };
+      }
+
+      renderTables();
+      checkCurrent();
     }
 
-    function buildTable(sheet1, sheet2) {
-      const header = sheet1[0];
-      let morningHTML = "<tr>" + header.map(h => `<th>${h}</th>`).join("") + "</tr>";
-      let afternoonHTML = "<tr>" + header.map(h => `<th>${h}</th>`).join("") + "</tr>";
+    function renderTables() {
+      const morning = document.getElementById("morning-body");
+      const afternoon = document.getElementById("afternoon-body");
+      morning.innerHTML = "";
+      afternoon.innerHTML = "";
 
-      for (let i = 1; i < sheet1.length; i++) {
-        let row = sheet1[i];
-        let html = "<tr>";
-        for (let j = 0; j < row.length; j++) {
-          if (j > 1 && row[j]) {
-            html += `<td class="clickable" onclick="showPopup('${row[0]}')">${row[j]}</td>`;
-          } else {
-            html += `<td>${row[j] || ""}</td>`;
+      for (let i = 1; i < timetable.length; i++) {
+        let row = timetable[i];
+        let tr = document.createElement("tr");
+        row.forEach((cell, j) => {
+          let td = document.createElement("td");
+          td.textContent = cell;
+          if (j >= 2 && cell) {
+            let code = row[0];
+            td.onclick = () => showPopup(code, cell);
           }
-        }
-        html += "</tr>";
-        if (row[0].startsWith("s")) morningHTML += html;
-        else afternoonHTML += html;
+          tr.appendChild(td);
+        });
+        if (row[0].startsWith("s")) morning.appendChild(tr);
+        else afternoon.appendChild(tr);
       }
-      document.getElementById("morning").innerHTML = morningHTML;
-      document.getElementById("afternoon").innerHTML = afternoonHTML;
-
-      window.sheet2 = sheet2; // lưu để dùng trong popup
     }
 
-    function showPopup(maTiet) {
-      const tiet = window.sheet2.find(r => r[0] === maTiet);
-      if (tiet) {
-        document.getElementById("popup-content").innerText = 
-          `${tiet[1]}: ${tiet[2]} - ${tiet[3]}`;
-        document.getElementById("popup").style.display = "block";
+    function showPopup(code, subject) {
+      let info = periods[code];
+      let html = `<strong>${subject}</strong><br>`;
+      if (info) {
+        html += `Tiết: ${info.name}<br>Bắt đầu: ${info.start}<br>Kết thúc: ${info.end}`;
+      } else {
+        html += "Không có thông tin thời gian.";
       }
+      document.getElementById("popup-content").innerHTML = html;
+      document.getElementById("popup").style.display = "block";
     }
 
     function closePopup() {
       document.getElementById("popup").style.display = "none";
     }
 
-    function showNow(sheet1, sheet2) {
-      const now = new Date();
-      const currentDay = now.getDay(); // CN=0
-      const currentTime = now.toTimeString().substring(0,5);
-
-      if (currentDay === 0) {
-        document.getElementById("now").innerText = "Hôm nay là Chủ nhật, không có tiết học.";
-        return;
-      }
-
-      let currentTiet = null;
-      for (let i = 1; i < sheet2.length; i++) {
-        const [ma, ten, start, end] = sheet2[i];
-        if (start <= currentTime && currentTime <= end) {
-          currentTiet = sheet2[i];
-          break;
-        }
-      }
-
-      if (!currentTiet) {
-        document.getElementById("now").innerText = "Đang ngoài giờ học.";
-        return;
-      }
-
-      const [maTiet, tenTiet, start, end] = currentTiet;
-      const row = sheet1.find(r => r[0] === maTiet);
-      const monHoc = row ? row[currentDay+1] : "Trống";
-
-      document.getElementById("now").innerText =
-        `Hôm nay: Thứ ${currentDay+1} | Đang học: ${monHoc || "Trống"} | ${tenTiet} (${start} - ${end})`;
+    function updateTime() {
+      let now = new Date();
+      document.getElementById("datetime").textContent = now.toLocaleString("vi-VN");
     }
 
+    function checkCurrent() {
+      let now = new Date();
+      let hhmm = now.getHours() + ":" + String(now.getMinutes()).padStart(2, "0");
+      let today = now.getDay(); // 0=CN, 1=T2...
+
+      if (today === 0) {
+        document.getElementById("current").textContent = "Hôm nay là Chủ nhật - ngoài giờ học";
+        return;
+      }
+
+      for (let code in periods) {
+        let p = periods[code];
+        if (p.start <= hhmm && hhmm <= p.end) {
+          // tìm môn học ở sheet1 theo hôm nay
+          for (let i = 1; i < timetable.length; i++) {
+            if (timetable[i][0] === code) {
+              let subject = timetable[i][today + 1]; // vì col2=thứ2 => index+1
+              document.getElementById("current").textContent =
+                `Hiện tại: ${subject || "Trống"} (${p.name})`;
+              return;
+            }
+          }
+        }
+      }
+      document.getElementById("current").textContent = "Đang ngoài giờ học";
+    }
+
+    setInterval(updateTime, 1000);
+    setInterval(checkCurrent, 60000);
+    updateTime();
     loadData();
   </script>
 </body>
