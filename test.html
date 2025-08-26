@@ -7,7 +7,8 @@
   <style>
     body { font-family: Arial, sans-serif; padding: 20px; background: #f5f5f5; }
     h1 { text-align: center; color: #333; }
-    .datetime { text-align: center; margin-bottom: 20px; font-weight: bold; color: #0066cc; }
+    .datetime { text-align: center; margin-bottom: 10px; font-weight: bold; color: #0066cc; }
+    .current-subject { text-align: center; margin-bottom: 20px; font-size: 18px; color: #cc0000; font-weight: bold; }
     table { width: 100%; border-collapse: collapse; margin-bottom: 30px; background: white; }
     th, td { border: 1px solid #ccc; padding: 8px; text-align: center; }
     th { background: #0066cc; color: white; }
@@ -19,6 +20,7 @@
 <body>
   <h1>THỜI KHÓA BIỂU</h1>
   <div class="datetime" id="datetime"></div>
+  <div class="current-subject" id="currentSubject">Đang kiểm tra môn học...</div>
 
   <div class="section-title">BUỔI SÁNG</div>
   <table>
@@ -55,11 +57,15 @@
   <script>
   const API_URL = "https://script.google.com/macros/s/AKfycbz04IeeS7Bw93cX2hWDwYX76VrHtb2ExNEQ0_4fx24hLDQcLCJSewTV13h-UUlGQh9p/exec";
 
+  let subjects = {};
+  let periods = {};
+
   async function loadData() {
     try {
       let res = await fetch(API_URL);
       let data = await res.json();
-      let { subjects, periods } = data;
+      subjects = data.subjects;
+      periods = data.periods;
 
       let tableMorning = document.getElementById("morning");
       let tableAfternoon = document.getElementById("afternoon");
@@ -82,6 +88,9 @@
         if(pid.startsWith("s")) tableMorning.appendChild(row);
         else tableAfternoon.appendChild(row);
       }
+
+      updateCurrentSubject(); // Cập nhật môn học hiện tại
+      setInterval(updateCurrentSubject, 60000); // Kiểm tra lại mỗi phút
     } catch (e) {
       console.error("Không lấy được dữ liệu:", e);
     }
@@ -103,6 +112,32 @@
   }
   setInterval(updateDateTime, 1000);
   updateDateTime();
+
+  // Xác định môn học hiện tại
+  function updateCurrentSubject(){
+    let now = new Date();
+    let dayIndex = now.getDay(); // 0=CN, 1=T2...
+    let days = ["CN","THỨ 2","THỨ 3","THỨ 4","THỨ 5","THỨ 6","THỨ 7"];
+    let today = days[dayIndex];
+    let timeNow = now.toTimeString().slice(0,5); // HH:MM
+
+    let found = false;
+    for(let pid in periods){
+      let p = periods[pid];
+      if(p.start <= timeNow && timeNow <= p.end){
+        let subject = subjects[pid] && subjects[pid][today] ? subjects[pid][today] : null;
+        if(subject){
+          document.getElementById("currentSubject").textContent =
+            `Đang học: ${subject} – ${p.name} (${p.start} - ${p.end})`;
+          found = true;
+          break;
+        }
+      }
+    }
+    if(!found){
+      document.getElementById("currentSubject").textContent = "Đang ngoài giờ học";
+    }
+  }
 
   loadData();
   </script>
