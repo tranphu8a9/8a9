@@ -4,156 +4,115 @@
   <meta charset="UTF-8">
   <title>Thời khóa biểu</title>
   <style>
-    body { font-family: Arial, sans-serif; background: #f0f4f8; margin: 20px; }
-    h1 { text-align: center; color: #2c3e50; }
-    #clock { text-align: center; font-size: 18px; margin-bottom: 12px; color: #16a085; }
-    .schedule { display: flex; justify-content: space-around; flex-wrap: wrap; margin-top: 20px; }
-    table { border-collapse: collapse; width: 100%; max-width: 480px; margin-bottom: 20px; background: #fff; box-shadow: 0 4px 8px rgba(0,0,0,0.1); border-radius: 8px;}
-    th, td { border: 1px solid #dee2e6; padding: 10px; text-align: center; }
-    th { background: #2980b9; color: white; }
-    td.subject { cursor: pointer; transition: background 0.2s, color 0.2s; }
-    td.subject:hover { background: #f39c12; color: white; }
-    #current { text-align: center; font-size: 20px; margin: 15px 0; color: #c0392b; }
-    /* Popup */
-    #overlay {
-      display: none;
-      position: fixed; top:0; left:0;
-      width:100%; height:100%;
-      background: rgba(0,0,0,0.4);
-      z-index: 1000;
+    body { font-family: Arial, sans-serif; background: #f9f9f9; padding: 20px; }
+    h1 { text-align: center; color: #333; }
+    #datetime { text-align: center; margin-bottom: 20px; font-weight: bold; }
+    .container { display: flex; gap: 20px; justify-content: center; }
+    table { border-collapse: collapse; width: 100%; background: white; }
+    th, td { border: 1px solid #ccc; padding: 8px; text-align: center; }
+    th { background: #4a90e2; color: white; }
+    td { cursor: pointer; }
+    td:hover { background: #e0f7fa; }
+    .status { margin-top: 20px; text-align: center; font-size: 18px; color: #d9534f; }
+    .popup {
+      display: none; position: fixed; top: 50%; left: 50%;
+      transform: translate(-50%, -50%); background: white;
+      padding: 20px; border: 2px solid #333; border-radius: 10px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.2);
     }
-    #popup {
-      display: none;
-      position: fixed;
-      top:50%; left:50%;
-      transform: translate(-50%, -50%);
-      background: #fff; padding: 20px;
-      border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-      z-index: 1001;
-      text-align: center;
-    }
-    #popup h2 { margin-top: 0; color: #2980b9; }
-    #popup button {
-      margin-top: 15px;
-      padding: 6px 14px;
-      border: none;
-      border-radius: 5px;
-      background: #2980b9; color: white;
-      cursor: pointer;
-    }
-    #popup button:hover {
-      background: #1f6391;
-    }
+    .popup button { margin-top: 10px; }
   </style>
 </head>
 <body>
-  <h1>⏰ Thời khóa biểu lớp 8A9</h1>
-  <div id="clock"></div>
-  <div id="current">Loading...</div>
-
-  <div class="schedule">
-    <table id="morning">
-      <thead><tr><th colspan="8">Buổi sáng</th></tr><tr><th>Mã tiết</th><th>Buổi/Tiết</th><th>Thứ 2</th><th>Thứ 3</th><th>Thứ 4</th><th>Thứ 5</th><th>Thứ 6</th><th>Thứ 7</th></tr></thead>
-      <tbody></tbody>
-    </table>
-    <table id="afternoon">
-      <thead><tr><th colspan="8">Buổi chiều</th></tr><tr><th>Mã tiết</th><th>Buổi/Tiết</th><th>Thứ 2</th><th>Thứ 3</th><th>Thứ 4</th><th>Thứ 5</th><th>Thứ 6</th><th>Thứ 7</th></tr></thead>
-      <tbody></tbody>
-    </table>
+  <h1>Thời khóa biểu</h1>
+  <div id="datetime"></div>
+  <div class="container">
+    <div>
+      <h2>Buổi sáng</h2>
+      <table id="morning"></table>
+    </div>
+    <div>
+      <h2>Buổi chiều</h2>
+      <table id="afternoon"></table>
+    </div>
   </div>
+  <div class="status" id="status"></div>
 
-  <div id="overlay"></div>
-  <div id="popup">
-    <h2 id="popup-title"></h2>
-    <p id="popup-time"></p>
+  <div class="popup" id="popup">
+    <div id="popupContent"></div>
     <button onclick="closePopup()">Đóng</button>
   </div>
 
   <script>
-    const API_URL = "https://script.google.com/macros/s/AKfycbz04IeeS7Bw93cX2hWDwYX76VrHtb2ExNEQ0_4fx24hLDQcLCJSewTV13h-UUlGQh9p/exec"; // Thay bằng exec URL
-    let timetable = [];
-    let periods = {};
+    const API_URL = "https://script.google.com/macros/s/AKfycbz04IeeS7Bw93cX2hWDwYX76VrHtb2ExNEQ0_4fx24hLDQcLCJSewTV13h-UUlGQh9p/exec";
 
-    async function init() {
+    async function fetchData() {
       const res = await fetch(API_URL);
       const data = await res.json();
-      timetable = data.sheet1;
-      for (let i = 1; i < data.sheet2.length; i++) {
-        const [code, name, start, end] = data.sheet2[i];
-        periods[code] = { name, start, end };
+      renderTimetable(data);
+      checkCurrentLesson(data);
+    }
+
+    function renderTimetable(data) {
+      const morning = document.getElementById("morning");
+      const afternoon = document.getElementById("afternoon");
+
+      // Header
+      let header = "<tr><th>Tiết</th><th>Thứ 2</th><th>Thứ 3</th><th>Thứ 4</th><th>Thứ 5</th><th>Thứ 6</th><th>Thứ 7</th></tr>";
+      morning.innerHTML = header;
+      afternoon.innerHTML = header;
+
+      data.tkb.forEach(row => {
+        let rowHtml = `<tr><td>${row["Buổi / Tiết"]}</td>`;
+        for (let i = 2; i <= 7; i++) {
+          let subject = row[`THỨ ${i}`] || "";
+          rowHtml += `<td onclick="showPopup('${subject}', '${row["Mã tiết"]}')">${subject}</td>`;
+        }
+        rowHtml += "</tr>";
+        if (row["Mã tiết"].startsWith("s")) morning.innerHTML += rowHtml;
+        else afternoon.innerHTML += rowHtml;
+      });
+    }
+
+    function showPopup(subject, code) {
+      if (!subject) return;
+      fetch(API_URL).then(res => res.json()).then(data => {
+        let tiet = data.tiet[code];
+        if (tiet) {
+          document.getElementById("popupContent").innerHTML =
+            `<b>${subject}</b><br>Giờ học: ${tiet.start} - ${tiet.end}`;
+          document.getElementById("popup").style.display = "block";
+        }
+      });
+    }
+
+    function closePopup() {
+      document.getElementById("popup").style.display = "none";
+    }
+
+    function checkCurrentLesson(data) {
+      const now = new Date();
+      const currentTime = now.getHours() + ":" + now.getMinutes();
+      let status = "Đang ngoài giờ học";
+
+      for (let code in data.tiet) {
+        let { ten, start, end } = data.tiet[code];
+        if (currentTime >= start && currentTime <= end) {
+          status = `Hiện tại đang học: ${ten} (${code})`;
+        }
       }
-      renderTables();
-      updateCurrent();
-      setInterval(updateClock, 1000);
-      setInterval(updateCurrent, 60000);
+      document.getElementById("status").innerText = status;
     }
 
     function updateClock() {
       const now = new Date();
-      document.getElementById("clock").textContent = now.toLocaleString("vi-VN");
+      document.getElementById("datetime").innerText =
+        now.toLocaleDateString("vi-VN") + " " + now.toLocaleTimeString("vi-VN");
     }
 
-    function renderTables() {
-      const mo = document.querySelector("#morning tbody");
-      const af = document.querySelector("#afternoon tbody");
-      mo.innerHTML = "";
-      af.innerHTML = "";
-
-      for (let i = 1; i < timetable.length; i++) {
-        const row = timetable[i];
-        const tr = document.createElement("tr");
-        row.forEach((cell, idx) => {
-          const td = document.createElement("td");
-          td.textContent = cell;
-          if (idx >= 2 && cell) {
-            td.classList.add("subject");
-            td.onclick = () => showPopup(row[0], cell);
-          }
-          tr.appendChild(td);
-        });
-        row[0].startsWith("s") ? mo.appendChild(tr) : af.appendChild(tr);
-      }
-    }
-
-    function updateCurrent() {
-      const now = new Date(), hh = now.getHours(), mm = now.getMinutes();
-      const total = hh * 60 + mm;
-      const dow = now.getDay();
-      if (dow === 0) {
-        return document.getElementById("current").textContent = "Hôm nay là Chủ nhật — ngoài giờ học";
-      }
-      for (const code in periods) {
-        const p = periods[code];
-        const [sh, sm] = p.start.split(":").map(Number);
-        const [eh, em] = p.end.split(":").map(Number);
-        const startMin = sh * 60 + sm;
-        const endMin = eh * 60 + em;
-        if (total >= startMin && total <= endMin) {
-          const row = timetable.find(r => r[0] === code);
-          const subject = row ? row[dow+1] : "";
-          return document.getElementById("current").textContent =
-            `Hiện tại đang học: ${subject || "Trống"} – ${p.name} (${p.start}-${p.end})`;
-        }
-      }
-      document.getElementById("current").textContent = "Đang ngoài giờ học";
-    }
-
-    function showPopup(code, subject) {
-      const info = periods[code];
-      document.getElementById("popup-title").textContent = subject + " (" + code + ")";
-      document.getElementById("popup-time").textContent = info
-        ? `Thời gian: ${info.start} – ${info.end}`
-        : "Chưa có thông tin thời gian.";
-      document.getElementById("overlay").style.display = "block";
-      document.getElementById("popup").style.display = "block";
-    }
-
-    function closePopup() {
-      document.getElementById("overlay").style.display = "none";
-      document.getElementById("popup").style.display = "none";
-    }
-
-    init();
+    setInterval(updateClock, 1000);
+    updateClock();
+    fetchData();
   </script>
 </body>
 </html>
